@@ -17,7 +17,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { dudeById, relicById, STAT_LABELS, trinketById, wikiUrl } from '../data/game';
-import type { Entry } from '../lib/comp';
+import { countedTypes, MAX_TYPES, type Entry } from '../lib/comp';
 import type { Analysis, Link } from '../lib/synergy';
 import { cellOf } from '../data/chart';
 import { ChartLines, ColChip, Desc, FamilyTag, Sprite } from './bits';
@@ -116,6 +116,7 @@ export function Roster({ roster, plannedRelics, focus, analysis, onChange, onTog
           Roster
         </h2>
         <p className="muted">Drag to reorder. Top of the list is the top of your Roster.</p>
+        <TypeCounter roster={roster} />
       </div>
       <div className="roster-body" style={{ paddingLeft: gutter.gutter }}>
         {!dragging && <Wires links={analysis.links} rows={rows} gutter={gutter.gutter} laneW={gutter.lane} />}
@@ -161,6 +162,20 @@ export function Roster({ roster, plannedRelics, focus, analysis, onChange, onTog
         </DndContext>
       </div>
     </section>
+  );
+}
+
+/** "3 of 5 types": Regular Dude plus up to MAX_TYPES other Dude Types. */
+function TypeCounter({ roster }: Readonly<{ roster: Entry[] }>) {
+  const used = countedTypes(roster);
+  let state = '';
+  if (used > MAX_TYPES) state = ' over';
+  else if (used === MAX_TYPES) state = ' full';
+  return (
+    <span className={`type-counter${state}`} title="Regular Dude plus up to 5 other Dude Types">
+      {used} of {MAX_TYPES} types
+      {used > MAX_TYPES && <span>: remove {used - MAX_TYPES}</span>}
+    </span>
   );
 }
 
@@ -280,7 +295,7 @@ function Row(p: Readonly<RowProps>) {
           </div>
         </div>
 
-        <div className="stepper" role="group" aria-label={`Number of ${dude.name}s`}>
+        <fieldset className="stepper" aria-label={`Number of ${dude.name}s`}>
           <button className="btn icon" onClick={() => p.onCount(Math.max(1, entry.count - 1))} aria-label="One fewer">
             −
           </button>
@@ -296,7 +311,7 @@ function Row(p: Readonly<RowProps>) {
           <button className="btn icon" onClick={() => p.onCount(Math.min(999, entry.count + 1))} aria-label="One more">
             +
           </button>
-        </div>
+        </fieldset>
 
         <button
           className={`trinket-slot${trinket ? ' filled' : ''}`}

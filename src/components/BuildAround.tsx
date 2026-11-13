@@ -99,7 +99,7 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
         them to others (yellow is best, then green).
       </p>
       {GROUPS.map((g) => (
-        <div key={g.id} className="focus-group" role="group" aria-label={`${g.label} stats`}>
+        <fieldset key={g.id} className="focus-group" aria-label={`${g.label} stats`}>
           <span className="focus-label">{g.label}</span>
           {FOCUS_COLUMNS.filter((c) => c.group === g.id).map((c) => (
             <button key={c.id} className="focus-btn" aria-pressed={focus.includes(c.id)} onClick={() => onToggleFocus(c.id)}>
@@ -107,7 +107,7 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
               {c.short}
             </button>
           ))}
-        </div>
+        </fieldset>
       ))}
 
       {focus.length > 0 && (

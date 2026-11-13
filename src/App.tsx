@@ -3,8 +3,8 @@ import { AnalysisPanel } from './components/Analysis';
 import { DudePicker } from './components/DudePicker';
 import { ItemPicker } from './components/ItemPicker';
 import { Roster } from './components/Roster';
-import { Sprite } from './components/bits';
-import { relics, SCRAPED_AT, SOURCE, trinkets } from './data/game';
+import { Modal, Sprite } from './components/bits';
+import { dudeById, relics, SCRAPED_AT, SOURCE, trinkets } from './data/game';
 import {
   compFromHash,
   decodeComp,
@@ -18,11 +18,17 @@ import {
   storeSaved,
   type Comp,
   type SavedComp,
+  unlockedTypes,
+  canAddType,
+  countedTypes,
+  flyersLeft,
+  MAX_TYPES,
 } from './lib/comp';
 import { analyse } from './lib/synergy';
 import { RELIC_GIVES } from './data/chart';
 import { CREDITS } from './credits';
 import { ChartView } from './components/ChartView';
+import { FlyerBar, RunStart } from './components/FlyerBar';
 
 function initialComp(): Comp {
   return compFromHash() ?? loadDraft() ?? emptyComp();
@@ -37,6 +43,7 @@ export default function App() {
   const [view, setView] = useState<'planner' | 'chart'>('planner');
   const [trinketFor, setTrinketFor] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [linkToCopy, setLinkToCopy] = useState<string | null>(null);
   const toastTimer = useRef<number>(0);
 
   // Opened from a share link: keep the comp, drop the hash so edits don't fight it.
@@ -61,17 +68,76 @@ export default function App() {
 
   const patch = (p: Partial<Comp>) => setComp((c) => ({ ...c, ...p }));
 
-  const addDude = (id: string) =>
+  const addDude = (id: string) => {
+    if (!canAddType(comp.roster, id)) {
+      flash(`Your Roster is full: Regular Dude plus ${MAX_TYPES} other types. Remove one to add another.`);
+      return;
+    }
     setComp((c) => {
       const existing = c.roster.find((e) => e.dude === id);
       if (existing) {
         return { ...c, roster: c.roster.map((e) => (e === existing ? { ...e, count: Math.min(999, e.count + 1) } : e)) };
       }
+      if (!canAddType(c.roster, id)) return c;
       return { ...c, roster: [...c.roster, { key: newKey(), dude: id, count: 1, trinket: null }] };
     });
+  };
 
   const toggleRelic = (id: string) =>
     setComp((c) => ({ ...c, relics: c.relics.includes(id) ? c.relics.filter((r) => r !== id) : [...c.relics, id] }));
+
+  // ----- Run tracking: flyers unlock Dude Types, picks go straight onto the Roster. -----
+
+  /**
+   * keep: start from the current Roster. Its types are Ensemble pre-picks (none = standard run).
+   * fresh: reset to a single Regular Dude. Either way the run always has a Regular Dude.
+   */
+  const startRun = (mode: 'keep' | 'fresh') => {
+    const regular = { key: newKey(), dude: 'basic', count: 1, trinket: null };
+    if (mode === 'fresh') {
+      setComp({ ...emptyComp(), run: true, roster: [regular] });
+      setSavedId(null);
+      return;
+    }
+    setComp((c) => ({
+      ...c,
+      run: true,
+      flyers: [],
+      roster: c.roster.some((e) => e.dude === 'basic') ? c.roster : [regular, ...c.roster],
+    }));
+  };
+
+  const setOffer = (offer: string[]) =>
+    setComp((c) => {
+      const decided = c.flyers.filter((f) => f.pick);
+      return { ...c, flyers: offer.length ? [...decided, { offer, pick: null }] : decided };
+    });
+
+  const pickFlyer = (id: string) => {
+    // The pick happened in-game, so always record it; only add to the Roster if there's room.
+    const fits = canAddType(comp.roster, id);
+    if (!fits) flash(`${dudeById.get(id)?.name ?? 'That Dude'} is unlocked, but your Roster is full. Remove a type to add it.`);
+    setComp((c) => {
+      const decided = c.flyers.filter((f) => f.pick);
+      const draft = c.flyers.find((f) => !f.pick);
+      const add = !c.roster.some((e) => e.dude === id) && canAddType(c.roster, id);
+      return {
+        ...c,
+        flyers: [...decided, { offer: draft?.offer ?? [id], pick: id }],
+        roster: add ? [...c.roster, { key: newKey(), dude: id, count: 1, trinket: null }] : c.roster,
+      };
+    });
+  };
+
+  const undoFlyer = () =>
+    setComp((c) => {
+      const decided = c.flyers.filter((f) => f.pick);
+      if (c.flyers.some((f) => !f.pick)) return { ...c, flyers: decided };
+      const last = decided.at(-1)?.pick;
+      return { ...c, flyers: decided.slice(0, -1), roster: c.roster.filter((e) => e.dude !== last) };
+    });
+
+  const endRun = () => setComp((c) => ({ ...c, run: false, flyers: [] }));
 
   const toggleFocus = (col: string) =>
     setComp((c) => ({ ...c, focus: c.focus.includes(col) ? c.focus.filter((f) => f !== col) : [...c.focus, col] }));
@@ -92,7 +158,8 @@ export default function App() {
       await navigator.clipboard.writeText(url);
       flash('Link copied');
     } catch {
-      window.prompt('Copy this link', url);
+      // Clipboard blocked (e.g. insecure context): show the link so it can be copied by hand.
+      setLinkToCopy(url);
     }
   };
 
@@ -111,6 +178,22 @@ export default function App() {
   };
 
   const trinketEntry = comp.roster.find((e) => e.key === trinketFor);
+
+
+  const analysisPanel = (
+    <AnalysisPanel
+      analysis={analysis}
+      plannedRelics={comp.relics}
+      focus={comp.focus}
+      notes={comp.notes}
+      onNotes={(notes) => patch({ notes })}
+      onToggleRelic={toggleRelic}
+      onToggleFocus={toggleFocus}
+      onOpenRelics={() => setRelicStat('')}
+      onFindRelics={setRelicStat}
+      onAddDude={addDude}
+    />
+  );
 
   return (
     <div className="app">
@@ -157,52 +240,56 @@ export default function App() {
           <button className="btn" onClick={saveComp}>
             {savedId ? 'Save changes' : 'Save'}
           </button>
-          <button className="btn primary" onClick={copyLink} disabled={!comp.roster.length}>
+          <button className="btn primary" onClick={copyLink} disabled={!comp.roster.length && !comp.flyers.length}>
             Copy share link
           </button>
         </div>
       </header>
 
-      {view === 'planner' ? (
+      {view === 'planner' && (
         <main className="layout">
-          <DudePicker counts={counts} focus={comp.focus} onAdd={addDude} />
-          <Roster
-            roster={comp.roster}
-            plannedRelics={planned}
+          <DudePicker
+            counts={counts}
             focus={comp.focus}
-            analysis={analysis}
-            onChange={(roster) => patch({ roster })}
-            onToggleRelic={toggleRelic}
-            onPickTrinket={setTrinketFor}
+            full={countedTypes(comp.roster) >= MAX_TYPES}
+            onAdd={addDude}
           />
-          <AnalysisPanel
-          analysis={analysis}
-          plannedRelics={comp.relics}
-          focus={comp.focus}
-          notes={comp.notes}
-          onNotes={(notes) => patch({ notes })}
-          onToggleRelic={toggleRelic}
-          onToggleFocus={toggleFocus}
-          onOpenRelics={() => setRelicStat('')}
-          onFindRelics={setRelicStat}
-          onAddDude={addDude}
-        />
+          <div className="center-col">
+            {comp.run ? (
+              <FlyerBar
+                flyers={comp.flyers}
+                pool={[...new Set([...unlockedTypes(comp), ...comp.roster.map((e) => e.dude)])]}
+                rosterTypes={comp.roster.map((e) => e.dude)}
+                left={flyersLeft(comp.roster)}
+                stage={countedTypes(comp.roster)}
+                focus={comp.focus}
+                relics={comp.relics}
+                onOffer={setOffer}
+                onPick={pickFlyer}
+                onUndo={undoFlyer}
+                onEnd={endRun}
+                onFocus={(focus) => patch({ focus })}
+              />
+            ) : (
+              <RunStart typeCount={countedTypes(comp.roster)} hasRoster={comp.roster.length > 0} onStart={startRun} />
+            )}
+            <Roster
+              roster={comp.roster}
+              plannedRelics={planned}
+              focus={comp.focus}
+              analysis={analysis}
+              onChange={(roster) => patch({ roster })}
+              onToggleRelic={toggleRelic}
+              onPickTrinket={setTrinketFor}
+            />
+          </div>
+          {analysisPanel}
         </main>
-      ) : (
+      )}
+      {view === 'chart' && (
         <main className="layout chart-layout">
           <ChartView focus={comp.focus} counts={counts} onToggleFocus={toggleFocus} onAddDude={addDude} />
-          <AnalysisPanel
-          analysis={analysis}
-          plannedRelics={comp.relics}
-          focus={comp.focus}
-          notes={comp.notes}
-          onNotes={(notes) => patch({ notes })}
-          onToggleRelic={toggleRelic}
-          onToggleFocus={toggleFocus}
-          onOpenRelics={() => setRelicStat('')}
-          onFindRelics={setRelicStat}
-          onAddDude={addDude}
-        />
+          {analysisPanel}
         </main>
       )}
 
@@ -256,6 +343,19 @@ export default function App() {
           )}
         </p>
       </footer>
+
+      <Modal open={linkToCopy !== null} onClose={() => setLinkToCopy(null)} title="Copy this link">
+        <div className="copy-box">
+          <p className="muted small">Your browser blocked automatic copying. Select the link and copy it.</p>
+          <input
+            className="input"
+            readOnly
+            value={linkToCopy ?? ''}
+            onFocus={(e) => e.currentTarget.select()}
+            aria-label="Share link"
+          />
+        </div>
+      </Modal>
 
       <div className="toast" role="status" aria-live="polite">
         {toast}

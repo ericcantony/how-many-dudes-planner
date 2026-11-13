@@ -6,14 +6,16 @@ import { ChartLines, Desc, FamilyTag, Sprite } from './bits';
 interface Props {
   counts: Map<string, number>;
   focus: string[];
+  /** The Roster already has the maximum number of Dude Types. */
+  full: boolean;
   onAdd: (dudeId: string) => void;
 }
 
 type Sort = 'default' | 'fit' | 'anchor';
 
-export function DudePicker({ counts, focus, onAdd }: Readonly<Props>) {
+export function DudePicker({ counts, focus, full, onAdd }: Readonly<Props>) {
   const [query, setQuery] = useState('');
-  const [family, setFamily] = useState<string | 'all'>('all');
+  const [family, setFamily] = useState<string>('all');
   const [preview, setPreview] = useState<Dude | null>(null);
   const [sort, setSort] = useState<Sort>('default');
   const effectiveSort: Sort = sort === 'fit' && !focus.length ? 'default' : sort;
@@ -43,7 +45,7 @@ export function DudePicker({ counts, focus, onAdd }: Readonly<Props>) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <div className="chips" role="group" aria-label="Filter by Family">
+      <fieldset className="chips" aria-label="Filter by Family">
         <button className="chip" aria-pressed={family === 'all'} onClick={() => setFamily('all')}>
           All
         </button>
@@ -57,7 +59,7 @@ export function DudePicker({ counts, focus, onAdd }: Readonly<Props>) {
             {f.name}
           </button>
         ))}
-      </div>
+      </fieldset>
       <label className="stat-filter">
         <span>Sort</span>
         <select className="input" value={effectiveSort} onChange={(e) => setSort(e.target.value as Sort)}>
@@ -72,17 +74,18 @@ export function DudePicker({ counts, focus, onAdd }: Readonly<Props>) {
       <ul className="dude-grid">
         {list.map((d) => {
           const n = counts.get(d.id) ?? 0;
+          const blocked = full && n === 0 && d.id !== 'basic';
           return (
             <li key={d.id}>
               <button
-                className={`dude-btn fam-${d.family ?? 'none'}`}
+                className={`dude-btn fam-${d.family ?? 'none'}${blocked ? ' blocked' : ''}`}
                 onClick={() => {
                   onAdd(d.id);
                   setPreview(d);
                 }}
                 onMouseEnter={() => setPreview(d)}
                 onFocus={() => setPreview(d)}
-                title={`Add ${d.name}`}
+                title={blocked ? `Roster full: remove a type to add ${d.name}` : `Add ${d.name}`}
               >
                 <Sprite id={d.icon} size={44} />
                 <span className="dude-btn-name">{d.name.replace(/ Dude$/, '')}</span>
