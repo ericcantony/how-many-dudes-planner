@@ -4,5 +4,5 @@ export const CREDITS = {
   chartAuthor: 'u/esmgcito',
   chartPost: 'https://www.reddit.com/r/HowManyDudes/comments/1xpsy6l/dude_classes_are_difficult_to_remember/',
   /** GitHub repo URL once it exists. Empty = no source link. */
-  repo: 'https://github.com/MuhEricCantonaBudiamin/how-many-dudes-planner',
+  repo: 'https://github.com/ericcantony/how-many-dudes-planner',
 };
