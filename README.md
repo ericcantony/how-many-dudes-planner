@@ -1,5 +1,9 @@
 # How Many Dudes? Comp Planner
 
+Live site: https://how-many-dudes-planner.vercel.app (after deploying to Vercel)
+
+Fan-made, not affiliated with Butterscotch Shenanigans. Synergy chart by u/esmgcito ([original post](https://www.reddit.com/r/HowManyDudes/comments/1xpsy6l/dude_classes_are_difficult_to_remember/)). Found a wrong chart cell or a missing synergy? [Open an issue](https://github.com/MuhEricCantonaBudiamin/how-many-dudes-planner/issues).
+
 A team-composition planner for *How Many Dudes?*. Build an ordered Roster of Dude Types, see which position-based abilities link up, check Family and count-based synergies, and plan Relics and Trinkets. Comps save in the browser and share as a link.
 
 ## Run
