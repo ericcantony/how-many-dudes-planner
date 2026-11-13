@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { familyById, sprite, type Token } from '../data/game';
 import { CELL_LABELS, columnById, COLUMNS, dudeCells, type Cell } from '../data/chart';
 
@@ -32,6 +32,27 @@ export function Sprite({ id, size = 40, alt = '' }: Readonly<{ id: string; size?
   );
 }
 
+/**
+ * Styled hover/focus tooltip that matches the site, instead of the browser's title tooltip.
+ * The trigger is focusable so keyboard users can open it too.
+ */
+export function Tip({
+  children,
+  content,
+  className = '',
+  as: Tag = 'span',
+}: Readonly<{ children: ReactNode; content: ReactNode; className?: string; as?: 'span' | 'li' | 'p' }>) {
+  const id = useId();
+  return (
+    <Tag className={`tip-host ${className}`} tabIndex={0} aria-describedby={id}>
+      {children}
+      <span role="tooltip" id={id} className="tip">
+        {content}
+      </span>
+    </Tag>
+  );
+}
+
 /** Stat icons are white glyphs; draw them as a mask so they take the current text colour in both themes. */
 export function StatIcon({ id, size = 16 }: Readonly<{ id: string; size?: number }>) {
   const url = `url("${sprite(id)}")`;
@@ -44,13 +65,15 @@ export function StatIcon({ id, size = 16 }: Readonly<{ id: string; size?: number
   );
 }
 
-export function FamilyTag({ id }: Readonly<{ id: string | null }>) {
+/** Family name and icon; with `count`, also how many Dudes of that Family are on the team (like the game panel). */
+export function FamilyTag({ id, count }: Readonly<{ id: string | null; count?: number }>) {
   const f = id ? familyById.get(id) : null;
   if (!f) return <span className="fam-tag fam-none">No Family</span>;
   return (
-    <span className={`fam-tag fam-${f.id}`}>
+    <span className={`fam-tag fam-${f.id}`} title={count === undefined ? undefined : `${count} ${f.name} Dudes on your team`}>
       <Sprite id={f.icon} size={16} />
       {f.name}
+      {count !== undefined && <span className="fam-count">{count}</span>}
     </span>
   );
 }

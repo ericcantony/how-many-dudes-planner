@@ -45,15 +45,17 @@ export function AnalysisPanel({
           <dd>{a.totalDudes}</dd>
         </div>
         <div>
-          <dt>Base HP</dt>
-          <dd>{fmt(a.totalHp)}</dd>
+          <dt>Team HP</dt>
+          <dd>{fmt(Math.round(a.totalHp))}</dd>
         </div>
         <div>
-          <dt>Base DPS</dt>
+          <dt>Team DPS</dt>
           <dd>{fmt(a.totalDps)}</dd>
         </div>
       </dl>
-      <p className="muted small">Totals use base stats, before Relics, Trinkets and battle buffs.</p>
+      <p className="muted small">
+        Includes planned Relics, Trinkets and Roster bonuses we can work out. In-battle effects aren’t counted.
+      </p>
 
       <BuildAround
         analysis={a}

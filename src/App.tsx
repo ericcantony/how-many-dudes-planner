@@ -22,6 +22,7 @@ import {
   canAddType,
   countedTypes,
   flyersLeft,
+  clampProjected,
   MAX_TYPES,
 } from './lib/comp';
 import { analyse } from './lib/synergy';
@@ -29,6 +30,9 @@ import { RELIC_GIVES } from './data/chart';
 import { CREDITS } from './credits';
 import { ChartView } from './components/ChartView';
 import { FlyerBar, RunStart } from './components/FlyerBar';
+import { RecruitHelper } from './components/RecruitHelper';
+import { ratioPlan } from './lib/ratio';
+import { teamStats } from './lib/stats';
 
 function initialComp(): Comp {
   return compFromHash() ?? loadDraft() ?? emptyComp();
@@ -53,6 +57,19 @@ export default function App() {
   useEffect(() => storeDraft(comp), [comp]);
 
   const analysis = useMemo(() => analyse(comp), [comp]);
+  const plan = useMemo(() => ratioPlan(comp), [comp]);
+  const stats = useMemo(() => teamStats(comp), [comp]);
+  // Breakdown totals use the same buffed stats as the Roster rows.
+  const shownAnalysis = useMemo(() => {
+    let totalHp = 0;
+    let totalDps = 0;
+    for (const e of comp.roster) {
+      const s = stats.get(e.key)?.stats ?? [];
+      totalHp += (s.find((x) => x.key === 'hpmax')?.value ?? 0) * e.count;
+      totalDps += (s.find((x) => x.key === 'dps')?.value ?? 0) * e.count;
+    }
+    return { ...analysis, totalHp, totalDps };
+  }, [analysis, stats, comp.roster]);
   const planned = useMemo(() => new Set(comp.relics), [comp.relics]);
   const counts = useMemo(() => {
     const m = new Map<string, number>();
@@ -139,6 +156,34 @@ export default function App() {
 
   const endRun = () => setComp((c) => ({ ...c, run: false, flyers: [] }));
 
+  // ----- Counts: Regulars come from events and get trained into other types. -----
+
+  const addRegulars = (n: number) =>
+    setComp((c) => {
+      const has = c.roster.some((e) => e.dude === 'basic');
+      const roster = has
+        ? c.roster.map((e) => (e.dude === 'basic' ? { ...e, count: Math.min(999, e.count + n) } : e))
+        : [{ key: newKey(), dude: 'basic', count: n, trinket: null }, ...c.roster];
+      return { ...c, roster };
+    });
+
+  const trainRegulars = (dude: string, n: number) => {
+    const have = comp.roster.find((e) => e.dude === 'basic')?.count ?? 0;
+    const moved = Math.min(n, have);
+    if (!moved) return;
+    setComp((c) => ({
+      ...c,
+      roster: c.roster
+        .map((e) => {
+          if (e.dude === 'basic') return { ...e, count: e.count - moved };
+          if (e.dude === dude) return { ...e, count: Math.min(999, e.count + moved) };
+          return e;
+        })
+        .filter((e) => e.count > 0),
+    }));
+    flash(`Trained ${moved} Regular${moved === 1 ? '' : 's'} into ${dudeById.get(dude)?.name ?? dude}`);
+  };
+
   const toggleFocus = (col: string) =>
     setComp((c) => ({ ...c, focus: c.focus.includes(col) ? c.focus.filter((f) => f !== col) : [...c.focus, col] }));
 
@@ -182,7 +227,7 @@ export default function App() {
 
   const analysisPanel = (
     <AnalysisPanel
-      analysis={analysis}
+      analysis={shownAnalysis}
       plannedRelics={comp.relics}
       focus={comp.focus}
       notes={comp.notes}
@@ -273,8 +318,29 @@ export default function App() {
             ) : (
               <RunStart typeCount={countedTypes(comp.roster)} hasRoster={comp.roster.length > 0} onStart={startRun} />
             )}
+            {plan.types.length > 0 && (
+              <RecruitHelper
+                plan={plan}
+                onProjected={(n) => patch({ projected: clampProjected(n) })}
+                onRecruit={addDude}
+                onTrain={trainRegulars}
+                onAddRegulars={addRegulars}
+                targets={comp.targets}
+                onTarget={(dude, pct) =>
+                  setComp((c) => {
+                    const targets = { ...c.targets };
+                    if (pct === null) delete targets[dude];
+                    else targets[dude] = pct;
+                    return { ...c, targets };
+                  })
+                }
+                onResetTargets={() => patch({ targets: {} })}
+              />
+            )}
             <Roster
               roster={comp.roster}
+              plan={plan}
+              stats={stats}
               plannedRelics={planned}
               focus={comp.focus}
               analysis={analysis}

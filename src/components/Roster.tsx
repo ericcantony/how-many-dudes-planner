@@ -16,15 +16,19 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { dudeById, relicById, STAT_LABELS, trinketById, wikiUrl } from '../data/game';
+import { dudeById, relicById, trinketById, wikiUrl } from '../data/game';
 import { countedTypes, MAX_TYPES, type Entry } from '../lib/comp';
+import type { RatioPlan, TypeTarget } from '../lib/ratio';
 import type { Analysis, Link } from '../lib/synergy';
 import { cellOf } from '../data/chart';
-import { ChartLines, ColChip, Desc, FamilyTag, Sprite } from './bits';
+import { ChartLines, ColChip, Desc, FamilyTag, Sprite, StatIcon, Tip } from './bits';
+import type { EntryStats, ShownStat } from '../lib/stats';
 
 interface Props {
   roster: Entry[];
   plannedRelics: Set<string>;
+  plan: RatioPlan;
+  stats: Map<string, EntryStats>;
   focus: string[];
   analysis: Analysis;
   onChange: (roster: Entry[]) => void;
@@ -47,7 +51,7 @@ function useGutter() {
   return isNarrow ? narrow : wide;
 }
 
-export function Roster({ roster, plannedRelics, focus, analysis, onChange, onToggleRelic, onPickTrinket }: Readonly<Props>) {
+export function Roster({ roster, plan, stats, plannedRelics, focus, analysis, onChange, onToggleRelic, onPickTrinket }: Readonly<Props>) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -115,7 +119,10 @@ export function Roster({ roster, plannedRelics, focus, analysis, onChange, onTog
         <h2 id="roster-title" className="panel-title">
           Roster
         </h2>
-        <p className="muted">Drag to reorder. Top of the list is the top of your Roster.</p>
+        <p className="muted">
+          Drag to reorder. Top of the list is the top of your Roster. Green stats include planned Relics and Trinkets;
+          hover or focus a stat for details.
+        </p>
         <TypeCounter roster={roster} />
       </div>
       <div className="roster-body" style={{ paddingLeft: gutter.gutter }}>
@@ -140,6 +147,10 @@ export function Roster({ roster, plannedRelics, focus, analysis, onChange, onTog
                   roster={roster}
                   notes={analysis.notes.get(e.key) ?? []}
                   focus={focus}
+                  target={plan.types.find((t) => t.dude === e.dude) ?? null}
+                  projected={plan.projected}
+                  recruited={plan.total}
+                  stats={stats.get(e.key) ?? null}
                   plannedRelics={plannedRelics}
                   onToggle={() =>
                     setOpen((s) => {
@@ -162,6 +173,113 @@ export function Roster({ roster, plannedRelics, focus, analysis, onChange, onTog
         </DndContext>
       </div>
     </section>
+  );
+}
+
+const pct = (x: number) => `${Math.round(x * 100)}%`;
+
+/** "Target 35% (35 of 100), now 9 (30%)" with a bar: current share against target share. */
+function RatioLine({
+  dude,
+  target,
+  projected,
+  recruited,
+}: Readonly<{ dude: string; target: TypeTarget | null; projected: number; recruited: number }>) {
+  if (dude === 'basic') return <p className="ratio-line muted">Regulars: not part of the ratio, waiting to be trained</p>;
+  if (!target) return null;
+  // Within 3 points of the goal counts as on target.
+  const gap = target.share - target.current;
+  let status = 'On target';
+  let tone = 'on';
+  if (gap > 0.03) {
+    status = 'Below target';
+    tone = 'below';
+  } else if (gap < -0.03) {
+    status = 'Above target';
+    tone = 'above';
+  }
+  const minNote = target.min === null ? '' : ` (needs at least ${target.min})`;
+  return (
+    <Tip
+      as="p"
+      className={`ratio-line ${tone}`}
+      content={
+        <>
+          <span className="tip-title">Why {target.sharePct}%</span>
+          <span className="tip-list">
+            {target.reasons.map((r) => (
+              <span key={r}>{r}</span>
+            ))}
+          </span>
+        </>
+      }
+    >
+      <span>
+        <strong>{status}</strong>: {target.count} of {recruited} recruited ({pct(target.current)}). Aim for {target.sharePct}%,
+        about {target.target} of {projected} by the end{minNote}.
+      </span>
+      <span className="ratio-bar" aria-hidden="true">
+        <span className="ratio-now" style={{ width: `${Math.min(100, target.current * 100)}%` }} />
+        <span className="ratio-target" style={{ left: `${Math.min(100, target.share * 100)}%` }} />
+      </span>
+    </Tip>
+  );
+}
+
+const fmtStat = (s: ShownStat) => {
+  if (s.percent) return `${Math.round(s.value * 10) / 10}%`;
+  if (s.key === 'hpmax') return String(Math.round(s.value));
+  return String(Math.round(s.value * 10) / 10);
+};
+
+/** Tooltip body for one stat: name, base → buffed value, and each source on its own line. */
+function StatTip({ stat, buffed }: Readonly<{ stat: ShownStat; buffed: boolean }>) {
+  return (
+    <>
+      <span className="tip-title">
+        <StatIcon id={stat.icon} size={16} />
+        {stat.label}
+      </span>
+      {buffed ? (
+        <>
+          <span className="tip-value">
+            {fmtStat({ ...stat, value: stat.base })} base → <strong>{fmtStat(stat)}</strong>
+          </span>
+          <span className="tip-list">
+            {stat.sources.map((src) => (
+              <span key={src}>{src}</span>
+            ))}
+          </span>
+          {stat.diminishing && (
+            <span className="tip-note">
+              Diminishing stat: each new source is reduced by what you already have, so totals grow slower than the sum.
+            </span>
+          )}
+        </>
+      ) : (
+        <span className="tip-value">
+          <strong>{fmtStat(stat)}</strong> base, no bonuses from your plan
+        </span>
+      )}
+    </>
+  );
+}
+
+/** Game-panel style stat line: HP, DPS, Run Speed, then any extra stats. Buffed values are highlighted. */
+function StatStrip({ stats }: Readonly<{ stats: ShownStat[] }>) {
+  return (
+    <ul className="stat-strip" aria-label="Stats">
+      {stats.map((s) => {
+        const buffed = Math.abs(s.value - s.base) > 0.001;
+        return (
+          <Tip key={s.key} as="li" className={buffed ? 'buffed' : ''} content={<StatTip stat={s} buffed={buffed} />}>
+            <StatIcon id={s.icon} size={14} />
+            <span className="sr-only">{s.label}</span>
+            {fmtStat(s)}
+          </Tip>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -245,6 +363,13 @@ interface RowProps {
   notes: { tone: string; text: string }[];
   focus: string[];
   plannedRelics: Set<string>;
+  /** Recruit ratio target for this type (null for Regular Dude). */
+  target: TypeTarget | null;
+  projected: number;
+  /** Non-Regular Dudes recruited so far. */
+  recruited: number;
+  /** Stats with calculated buffs, as the game panel shows them. */
+  stats: EntryStats | null;
   onToggle: () => void;
   onCount: (n: number) => void;
   onRemove: () => void;
@@ -287,12 +412,14 @@ function Row(p: Readonly<RowProps>) {
         <div className="row-id">
           <h3>{dude.name}</h3>
           <div className="row-tags">
-            <FamilyTag id={dude.family} />
+            <FamilyTag id={dude.family} count={p.stats?.familyCount ?? undefined} />
             {p.focus.map((col) => {
               const cell = cellOf(dude.id, col);
               return cell ? <ColChip key={col} col={col} cell={cell} compact /> : null;
             })}
           </div>
+          {p.stats && <StatStrip stats={p.stats.stats} />}
+          <RatioLine dude={dude.id} target={p.target} projected={p.projected} recruited={p.recruited} />
         </div>
 
         <fieldset className="stepper" aria-label={`Number of ${dude.name}s`}>
@@ -372,14 +499,6 @@ function Row(p: Readonly<RowProps>) {
             </a>
           </p>
           <ChartLines dudeId={dude.id} />
-          <dl className="stats">
-            {Object.entries(dude.stats).map(([k, v]) => (
-              <div key={k}>
-                <dt>{STAT_LABELS[k] ?? k}</dt>
-                <dd>{v}</dd>
-              </div>
-            ))}
-          </dl>
           {trinket && (
             <div className="trinket-detail">
               <Sprite id={trinket.icon} size={28} />

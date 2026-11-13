@@ -22,7 +22,14 @@ export interface Comp {
   flyers: Flyer[];
   /** True while tracking a live run: the flyer bar shows and Recruit is limited to unlocked types. */
   run: boolean;
+  /** Expected number of non-Regular Dudes by the end of the run; target ratios are shares of this. */
+  projected: number;
+  /** Target shares the user set by hand, in percent, by Dude id. Types without one use the automatic split. */
+  targets: Record<string, number>;
 }
+
+export const DEFAULT_PROJECTED = 100;
+export const clampProjected = (n: number) => Math.max(5, Math.min(999, Math.round(n)));
 
 /** A flyer round: up to 3 offered Dude Types; picking one unlocks it for recruiting. */
 export interface Flyer {
@@ -46,7 +53,7 @@ export const canAddType = (roster: Entry[], dude: string) =>
  */
 export const flyersLeft = (roster: Entry[]) => Math.max(0, MAX_TYPES - countedTypes(roster));
 
-export const emptyComp = (): Comp => ({ name: '', notes: '', roster: [], relics: [], focus: [], flyers: [], run: false });
+export const emptyComp = (): Comp => ({ name: '', notes: '', roster: [], relics: [], focus: [], flyers: [], run: false, projected: DEFAULT_PROJECTED, targets: {} });
 
 /** Dude Types unlocked by the run so far (Regular Dude is always available). */
 export const unlockedTypes = (c: Comp) => ['basic', ...c.flyers.map((f) => f.pick).filter((p): p is string => !!p)];
@@ -55,7 +62,7 @@ let keySeq = 0;
 export const newKey = () => `e${Date.now().toString(36)}${(keySeq++).toString(36)}`;
 
 // ---------- Sharing: compact, URL-safe encoding ----------
-// Format (before base64url): name \n notes \n dude*count~trinket,dude*count \n relic,relic \n focus,focus \n flyers \n run ("1" while tracking a run)
+// Format (before base64url): name \n notes \n dude*count~trinket,dude*count \n relic,relic \n focus,focus \n flyers \n run ("1" while tracking a run) \n projected total \n targets (dude:percent,dude:percent)
 // Flyers: "offer1.offer2.offer3>pick" per round, comma-separated; an undecided round ends with ">".
 // Only ever append new fields so old links keep working.
 
@@ -84,16 +91,33 @@ function decodeFlyers(text: string): Flyer[] {
   return out.filter((f, i) => f.pick || i === out.length - 1);
 }
 
+const encodeTargets = (t: Record<string, number>) =>
+  Object.entries(t)
+    .map(([d, p]) => `${d}:${p}`)
+    .join(',');
+
+function decodeTargets(text: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const part of text.split(',').filter(Boolean)) {
+    const [d, p] = part.split(':');
+    const n = Number(p);
+    if (dudeById.has(d) && d !== 'basic' && Number.isFinite(n)) out[d] = clampTarget(n);
+  }
+  return out;
+}
+
+export const clampTarget = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
+
 export function encodeComp(c: Comp): string {
   const roster = c.roster.map((e) => `${e.dude}*${e.count}${e.trinket ? `~${e.trinket}` : ''}`).join(',');
   const clean = (s: string) => s.replaceAll('\n', ' ');
-  const fields = [clean(c.name), clean(c.notes), roster, c.relics.join(','), c.focus.join(','), encodeFlyers(c.flyers), c.run ? '1' : ''];
+  const fields = [clean(c.name), clean(c.notes), roster, c.relics.join(','), c.focus.join(','), encodeFlyers(c.flyers), c.run ? '1' : '', String(c.projected), encodeTargets(c.targets)];
   return b64urlEncode(fields.join('\n'));
 }
 
 export function decodeComp(code: string): Comp | null {
   try {
-    const [name = '', notes = '', roster = '', relics = '', focus = '', flyers = '', run = ''] = b64urlDecode(code).split('\n');
+    const [name = '', notes = '', roster = '', relics = '', focus = '', flyers = '', run = '', projected = '', targets = ''] = b64urlDecode(code).split('\n');
     const entries: Entry[] = [];
     for (const part of roster.split(',').filter(Boolean)) {
       const m = /^([^*~]+)\*(\d+)(?:~(.+))?$/.exec(part);
@@ -113,6 +137,8 @@ export function decodeComp(code: string): Comp | null {
       focus: focus.split(',').filter((f) => columnById.has(f)),
       flyers: decodeFlyers(flyers),
       run: run === '1',
+      projected: clampProjected(Number(projected) || DEFAULT_PROJECTED),
+      targets: decodeTargets(targets),
     };
   } catch {
     return null;
