@@ -1,5 +1,5 @@
 import { dudeById, families, relicById, relics, statNum, type Dude, type Relic } from '../data/game';
-import { CHART_DUDES, cellOf, familyCells, givesToTeam, RELIC_GIVES, scales, selfScaling, type Cell } from '../data/chart';
+import { CHART_DUDES, cellOf, familyCells, focusScore, givesToTeam, RELIC_GIVES, scales, selfScaling, type Cell } from '../data/chart';
 import type { Comp, Entry } from './comp';
 
 const relicIdByName = new Map(relics.map((r) => [r.name, r.id]));
@@ -248,8 +248,8 @@ export function analyse(comp: Comp): Analysis {
 }
 
 /** Y beats G: a Dude that only buffs others is the stronger teammate for that stat. */
-const byCellStrength = (col: string) => (a: string, b: string) =>
-  Number(cellOf(b, col) === 'Y') - Number(cellOf(a, col) === 'Y');
+/** Stronger givers first: Y (3) or G (2), times the spreadsheet grade. */
+const byCellStrength = (col: string) => (a: string, b: string) => focusScore(b, [col]) - focusScore(a, [col]);
 
 /** For each focus stat: who scales with it, and who (Dudes, Families, planned Relics) gives it. */
 export function focusLineup(types: string[], focus: string[], plannedRelics: string[]): FocusLine[] {

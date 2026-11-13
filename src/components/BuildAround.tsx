@@ -1,7 +1,12 @@
-import { cellOf, columnById, FOCUS_COLUMNS, type ColGroup } from '../data/chart';
+import { CHART_DUDES, cellOf, columnById, FOCUS_COLUMNS, givesToTeam, gradeOf, type ColGroup } from '../data/chart';
 import { dudeById, familyById, relicById } from '../data/game';
 import type { Analysis, FocusLine } from '../lib/synergy';
 import { CellLegend, ColChip, Sprite, StatIcon } from './bits';
+
+/** Team healers graded S or A for Healing (HP/s per Dude) in the chart spreadsheet. */
+const TOP_HEALERS = CHART_DUDES.filter((d) => givesToTeam(cellOf(d, 'heal')) && ['S', 'A'].includes(gradeOf(d, 'heal') ?? ''))
+  .map((d) => `${dudeById.get(d)!.name} (${gradeOf(d, 'heal')})`)
+  .join(', ');
 
 interface Props {
   analysis: Analysis;
@@ -132,14 +137,14 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
           </>
         )}
         <p className="muted small">
-          The chart doesn’t rank healers: the post rates Chef as a top healer and Necrodude as a weak one.
+          Strongest healers in the chart (Healing graded as HP/s per Dude): {TOP_HEALERS}.
         </p>
       </div>
 
       <details className="legend-box">
         <summary>Colour key</summary>
         <CellLegend />
-        <p className="muted small">From the synergy chart by u/esmgcito on r/HowManyDudes.</p>
+        <p className="muted small">From the synergy chart and spreadsheet by u/esmgcito on r/HowManyDudes.</p>
       </details>
     </section>
   );

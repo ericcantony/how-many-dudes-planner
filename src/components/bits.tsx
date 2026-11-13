@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { familyById, sprite, type Token } from '../data/game';
-import { CELL_LABELS, columnById, COLUMNS, dudeCells, type Cell } from '../data/chart';
+import { CELL_LABELS, columnById, COLUMNS, dudeCells, GRADE_LABELS, type Cell, type ChartGrade } from '../data/chart';
 import type { Grade } from '../lib/flyer';
 
 /** Stable keys from each token's own content; a counter only tells repeats of the same text apart. */
@@ -203,9 +203,12 @@ export function ColChip({
   cell,
   compact = false,
   inButton = false,
+  grade,
 }: Readonly<{
   col: string;
   cell?: Cell;
+  /** Strength grade from the chart spreadsheet (S–F). */
+  grade?: ChartGrade;
   compact?: boolean;
   /** The chip sits inside a button: show the tooltip on hover but don't make it a separate tab stop. */
   inButton?: boolean;
@@ -222,6 +225,11 @@ export function ColChip({
         <span className="tip-cell">
           <span className={`swatch cell-${cell}`} aria-hidden="true" />
           {CELL_LABELS[cell]}
+        </span>
+      )}
+      {grade && (
+        <span className="tip-cell">
+          Grade {grade}: {GRADE_LABELS[grade]}
         </span>
       )}
     </>

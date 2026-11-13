@@ -1696,6 +1696,29 @@ button {
   margin-left: auto;
 }
 
+.chart td .grade {
+  display: block;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 26px;
+  color: var(--cell-text, var(--ink));
+}
+
+.chart td .grade.fam-only {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.chart-dude.static {
+  cursor: default;
+}
+
+.chart-dude.static:hover {
+  background: none;
+}
+
 .chart-blue-n {
   text-align: center;
   font-weight: 800;

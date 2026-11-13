@@ -413,7 +413,7 @@ export default function App() {
           .
         </p>
         <p>
-          Synergy chart by{' '}
+          Synergy chart and grades by{' '}
           <a href={CREDITS.chartPost} target="_blank" rel="noreferrer">
             {CREDITS.chartAuthor || 'a community member on r/HowManyDudes'}
           </a>

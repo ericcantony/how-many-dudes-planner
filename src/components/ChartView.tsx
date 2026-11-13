@@ -1,5 +1,19 @@
 import { Fragment, useMemo, useState } from 'react';
-import { CELL_LABELS, CHART_DUDES, COLUMNS, cellOf, familyCells, selfScaling, scales, givesToTeam } from '../data/chart';
+import {
+  CELL_LABELS,
+  CHART_DUDES,
+  COLUMN_BEST,
+  COLUMNS,
+  GRADE_LABELS,
+  GROUP_ROWS,
+  cellOf,
+  familyOnly,
+  gradeOf,
+  selfScaling,
+  scales,
+  givesToTeam,
+  type Column,
+} from '../data/chart';
 import { dudeById, families } from '../data/game';
 import { CellLegend, Sprite } from './bits';
 
@@ -8,6 +22,35 @@ interface Props {
   counts: Map<string, number>;
   onToggleFocus: (col: string) => void;
   onAddDude: (id: string) => void;
+}
+
+/** Tooltip text for one cell: colour meaning, strength grade and the column's best total. */
+function cellTitle(name: string, c: Column, rowKey: string) {
+  const cell = cellOf(rowKey, c.id);
+  const grade = gradeOf(rowKey, c.id);
+  const fromFamily = familyOnly(rowKey, c.id);
+  if (!cell && !grade) return undefined;
+  const parts = [`${name}, ${c.label}`];
+  if (cell) parts.push(CELL_LABELS[cell]);
+  else if (fromFamily) parts.push('Only through his Family Relics');
+  if (grade) parts.push(`Grade ${grade}: ${GRADE_LABELS[grade]} (best: ${COLUMN_BEST[c.id]})`);
+  return parts.join('. ');
+}
+
+/** One chart cell: colour, plus the strength grade letter (grey italic when it comes only from Family Relics). */
+function GradeCell({ rowKey, name, col, focused }: Readonly<{ rowKey: string; name: string; col: Column; focused: boolean }>) {
+  const cell = cellOf(rowKey, col.id);
+  const grade = gradeOf(rowKey, col.id);
+  const classes = [];
+  if (cell) classes.push(`cell-${cell}`);
+  if (focused) classes.push('focused');
+  const title = cellTitle(name, col, rowKey);
+  return (
+    <td className={classes.join(' ') || undefined} title={title}>
+      {grade && <span className={familyOnly(rowKey, col.id) ? 'grade fam-only' : 'grade'}>{grade}</span>}
+      {title && <span className="sr-only">{title}</span>}
+    </td>
+  );
 }
 
 /** The community synergy chart: Dudes × stats, grouped by Family. Click a column to focus it, a Dude to add him. */
@@ -80,16 +123,9 @@ export function ChartView({ focus, counts, onToggleFocus, onAddDude }: Readonly<
                     </span>
                   </th>
                   <td />
-                  {COLUMNS.map((c) => {
-                    const cell = familyCells(family.id)?.get(c.id);
-                    return (
-                      <td
-                        key={c.id}
-                        className={`${cell ? `cell-${cell}` : ''}${focus.includes(c.id) ? ' focused' : ''}`}
-                        title={cell ? `${family.name} Family Relics, ${c.label}: ${CELL_LABELS[cell]}` : undefined}
-                      />
-                    );
-                  })}
+                  {COLUMNS.map((c) => (
+                    <GradeCell key={c.id} rowKey={`family:${family.id}`} name={`${family.name} Family Relics`} col={c} focused={focus.includes(c.id)} />
+                  ))}
                 </tr>
                 {dudes.map((d) => {
                   const dude = dudeById.get(d)!;
@@ -104,28 +140,51 @@ export function ChartView({ focus, counts, onToggleFocus, onAddDude }: Readonly<
                         </button>
                       </th>
                       <td className="chart-blue-n">{selfScaling(d)}</td>
-                      {COLUMNS.map((c) => {
-                        const cell = cellOf(d, c.id);
-                        return (
-                          <td
-                            key={c.id}
-                            className={`${cell ? `cell-${cell}` : ''}${focus.includes(c.id) ? ' focused' : ''}`}
-                            title={cell ? `${dude.name}, ${c.label}: ${CELL_LABELS[cell]}` : undefined}
-                          >
-                            {cell && <span className="sr-only">{CELL_LABELS[cell]}</span>}
-                          </td>
-                        );
-                      })}
+                      {COLUMNS.map((c) => (
+                        <GradeCell key={c.id} rowKey={d} name={dude.name} col={c} focused={focus.includes(c.id)} />
+                      ))}
                     </tr>
                   );
                 })}
               </Fragment>
             ))}
+            <tr className="chart-family">
+              <th scope="row">Other</th>
+              <td />
+              {COLUMNS.map((c) => (
+                <td key={c.id} className={focus.includes(c.id) ? 'focused' : undefined} />
+              ))}
+            </tr>
+            <tr>
+              <th scope="row">
+                <span className="chart-dude static">
+                  <Sprite id={dudeById.get('basic')!.icon} size={22} />
+                  Regular
+                </span>
+              </th>
+              <td className="chart-blue-n">{selfScaling('basic')}</td>
+              {COLUMNS.map((c) => (
+                <GradeCell key={c.id} rowKey="basic" name="Regular Dude" col={c} focused={focus.includes(c.id)} />
+              ))}
+            </tr>
+            {GROUP_ROWS.map((g) => (
+              <tr key={g.id}>
+                <th scope="row">
+                  <span className="chart-dude static">{g.name}</span>
+                </th>
+                <td />
+                {COLUMNS.map((c) => (
+                  <GradeCell key={c.id} rowKey={`group:${g.id}`} name={g.name} col={c} focused={focus.includes(c.id)} />
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
       <p className="muted small">
-        Chart transcribed from a community post on r/HowManyDudes (credited below). Regular Dude and summoned Dudes aren’t in it.
+        Chart and grades from a community post and spreadsheet on r/HowManyDudes (credited below; Dudex read 2026-11-06). Letters
+        grade the stacked total (all his Relics, his Family’s and his ability, at 30 Dudes) against the best in the column: S
+        best, then A to F. A grey letter on a white cell comes only from Family Relics. Summoned Dudes aren’t in it.
       </p>
     </section>
   );

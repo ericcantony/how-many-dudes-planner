@@ -20,7 +20,7 @@ import { dudeById, relicById, trinketById, wikiUrl } from '../data/game';
 import { countedTypes, MAX_TYPES, type Entry } from '../lib/comp';
 import type { RatioPlan, TypeTarget } from '../lib/ratio';
 import type { Analysis, Link } from '../lib/synergy';
-import { cellOf } from '../data/chart';
+import { cellOf, gradeOf } from '../data/chart';
 import { ChartLines, ColChip, Desc, FamilyTag, Sprite, StatIcon, Tip } from './bits';
 import type { EntryStats, ShownStat } from '../lib/stats';
 
@@ -453,7 +453,7 @@ function Row(p: Readonly<RowProps>) {
             <FamilyTag id={dude.family} count={p.stats?.familyCount ?? undefined} />
             {p.focus.map((col) => {
               const cell = cellOf(dude.id, col);
-              return cell ? <ColChip key={col} col={col} cell={cell} compact /> : null;
+              return cell ? <ColChip key={col} col={col} cell={cell} grade={gradeOf(dude.id, col)} compact /> : null;
             })}
           </div>
           {p.stats && <StatStrip stats={p.stats.stats} />}
