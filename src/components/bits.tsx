@@ -13,18 +13,27 @@ import { createPortal } from 'react-dom';
 import { familyById, sprite, type Token } from '../data/game';
 import { CELL_LABELS, columnById, COLUMNS, dudeCells, type Cell } from '../data/chart';
 
+/** Stable keys from each token's own content; a counter only tells repeats of the same text apart. */
+function keyTokens(tokens: Token[]) {
+  const seen = new Map<string, number>();
+  return tokens.map(([kind, text]) => {
+    const base = `${kind}:${text}`;
+    const n = seen.get(base) ?? 0;
+    seen.set(base, n + 1);
+    return { kind, text, key: n ? `${base}#${n}` : base };
+  });
+}
+
+const TOKEN_CLASS: Record<string, string | undefined> = { v: 'tok-var', g: 'tok-term' };
+
 export function Desc({ tokens }: Readonly<{ tokens: Token[] }>) {
   return (
     <>
-      {tokens.map(([kind, text], i) =>
-        kind === 't' ? (
-          <span key={i}>{text}</span>
-        ) : (
-          <span key={i} className={kind === 'v' ? 'tok-var' : 'tok-term'}>
-            {text}
-          </span>
-        ),
-      )}
+      {keyTokens(tokens).map((t) => (
+        <span key={t.key} className={TOKEN_CLASS[t.kind]}>
+          {t.text}
+        </span>
+      ))}
     </>
   );
 }
@@ -255,15 +264,18 @@ export function Modal({
     if (open && !d.open) d.showModal();
     if (!open && d.open) d.close();
   }, [open]);
+  // Clicking the backdrop (the dialog element itself, outside its content) closes it. Esc is handled natively.
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    const onBackdrop = (e: MouseEvent) => {
+      if (e.target === d) onClose();
+    };
+    d.addEventListener('click', onBackdrop);
+    return () => d.removeEventListener('click', onBackdrop);
+  }, [onClose]);
   return (
-    <dialog
-      ref={ref}
-      className="modal"
-      onClose={onClose}
-      onClick={(e) => {
-        if (e.target === ref.current) onClose();
-      }}
-    >
+    <dialog ref={ref} className="modal" onClose={onClose}>
       {open && (
         <div className="modal-body">
           <header className="modal-head">
