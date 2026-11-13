@@ -390,7 +390,16 @@ export default function App() {
           <a href={SOURCE} target="_blank" rel="noreferrer">
             official Dudex
           </a>{' '}
-          and belong to Butterscotch Shenanigans.
+          and belong to Butterscotch Shenanigans. They are used with permission and are subject to Butterscotch
+          Shenanigans’{' '}
+          <a href={CREDITS.bscotchTerms} target="_blank" rel="noreferrer">
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a href={CREDITS.bscotchIp} target="_blank" rel="noreferrer">
+            Intellectual Property policy
+          </a>
+          .
         </p>
         <p>
           Synergy chart by{' '}
