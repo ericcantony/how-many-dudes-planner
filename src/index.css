@@ -2282,10 +2282,8 @@ fieldset.stepper {
 }
 
 .tip {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 40;
+  position: fixed;
+  z-index: 100;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -2303,18 +2301,22 @@ fieldset.stepper {
   line-height: 1.4;
   white-space: normal;
   text-align: left;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-2px);
-  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
   pointer-events: none;
+  animation: tip-in 0.12s ease;
+}
+
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
 }
 
 .tip::before {
   content: '';
   position: absolute;
   top: -7px;
-  left: 14px;
+  left: var(--arrow, 14px);
   width: 12px;
   height: 12px;
   background: var(--sheet);
@@ -2323,11 +2325,17 @@ fieldset.stepper {
   transform: rotate(45deg);
 }
 
-.tip-host:hover > .tip,
-.tip-host:focus-visible > .tip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+.tip.above::before {
+  top: auto;
+  bottom: -7px;
+  transform: rotate(225deg);
+}
+
+.tip-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
 }
 
 .tip-title {
@@ -2361,7 +2369,7 @@ fieldset.stepper {
 
 @media (prefers-reduced-motion: reduce) {
   .tip {
-    transition: none;
+    animation: none;
   }
 }
 

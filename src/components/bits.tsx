@@ -1,4 +1,15 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import {
+  createElement,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+  type Ref,
+} from 'react';
+import { createPortal } from 'react-dom';
 import { familyById, sprite, type Token } from '../data/game';
 import { CELL_LABELS, columnById, COLUMNS, dudeCells, type Cell } from '../data/chart';
 
@@ -32,24 +43,89 @@ export function Sprite({ id, size = 40, alt = '' }: Readonly<{ id: string; size?
   );
 }
 
+interface TipPos {
+  top: number;
+  left: number;
+  arrow: number;
+  above: boolean;
+}
+
+const EDGE = 8;
+
+/** Where to draw the tooltip: below the trigger, or above it if there's no room; kept inside the window. */
+function placeTip(host: DOMRect, tip: DOMRect): TipPos {
+  const left = Math.max(EDGE, Math.min(host.left, window.innerWidth - tip.width - EDGE));
+  const below = host.bottom + EDGE;
+  const above = below + tip.height > window.innerHeight - EDGE && host.top - tip.height - EDGE > EDGE;
+  const anchor = host.left + Math.min(host.width / 2, 20);
+  return {
+    top: above ? host.top - tip.height - EDGE : below,
+    left,
+    arrow: Math.max(12, Math.min(anchor - left, tip.width - 20)),
+    above,
+  };
+}
+
 /**
  * Styled hover/focus tooltip that matches the site, instead of the browser's title tooltip.
- * The trigger is focusable so keyboard users can open it too.
+ * It's drawn on top of the page (a portal), so scrolling panels can't clip it.
+ * The trigger is focusable so keyboard users can open it too, unless it sits inside a button.
  */
 export function Tip({
   children,
   content,
   className = '',
   as: Tag = 'span',
-}: Readonly<{ children: ReactNode; content: ReactNode; className?: string; as?: 'span' | 'li' | 'p' }>) {
+  focusable = true,
+}: Readonly<{ children: ReactNode; content: ReactNode; className?: string; as?: 'span' | 'li' | 'p'; focusable?: boolean }>) {
   const id = useId();
-  return (
-    <Tag className={`tip-host ${className}`} tabIndex={0} aria-describedby={id}>
-      {children}
-      <span role="tooltip" id={id} className="tip">
-        {content}
-      </span>
-    </Tag>
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  const tipRef = useRef<HTMLSpanElement>(null);
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<TipPos | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open || !host || !tipRef.current) return;
+    setPos(placeTip(host.getBoundingClientRect(), tipRef.current.getBoundingClientRect()));
+    const close = () => setOpen(false);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [open, host]);
+
+  const show = () => {
+    setPos(null);
+    setOpen(true);
+  };
+  const hide = () => setOpen(false);
+
+  const style = pos
+    ? ({ top: pos.top, left: pos.left, '--arrow': `${pos.arrow}px` } as CSSProperties)
+    : { top: 0, left: 0, visibility: 'hidden' as const };
+
+  return createElement(
+    Tag,
+    {
+      ref: setHost as Ref<HTMLSpanElement>,
+      className: `tip-host ${className}`,
+      tabIndex: focusable ? 0 : undefined,
+      'aria-describedby': open ? id : undefined,
+      onMouseEnter: show,
+      onMouseLeave: hide,
+      onFocus: show,
+      onBlur: hide,
+    },
+    children,
+    open &&
+      createPortal(
+        <span role="tooltip" id={id} ref={tipRef} className={`tip${pos?.above ? ' above' : ''}`} style={style}>
+          {content}
+        </span>,
+        document.body,
+      ),
   );
 }
 
@@ -83,20 +159,38 @@ export function ColChip({
   col,
   cell,
   compact = false,
-  title,
+  inButton = false,
 }: Readonly<{
   col: string;
   cell?: Cell;
   compact?: boolean;
-  title?: string;
+  /** The chip sits inside a button: show the tooltip on hover but don't make it a separate tab stop. */
+  inButton?: boolean;
 }>) {
   const c = columnById.get(col)!;
   const label = cell ? `${c.label}: ${CELL_LABELS[cell]}` : c.label;
+  const tip = (
+    <>
+      <span className="tip-title">
+        {c.icon && <StatIcon id={c.icon} size={16} />}
+        {c.label}
+      </span>
+      {cell && (
+        <span className="tip-cell">
+          <span className={`swatch cell-${cell}`} aria-hidden="true" />
+          {CELL_LABELS[cell]}
+        </span>
+      )}
+    </>
+  );
+  const classes = ['col-chip'];
+  if (cell) classes.push(`cell-${cell}`);
+  if (compact) classes.push('compact');
   return (
-    <span className={`col-chip${cell ? ` cell-${cell}` : ''}${compact ? ' compact' : ''}`} title={title ?? label}>
+    <Tip className={classes.join(' ')} content={tip} focusable={!inButton}>
       {c.icon ? <StatIcon id={c.icon} size={compact ? 14 : 16} /> : null}
       {compact ? <span className={c.icon ? 'sr-only' : 'col-abbr'}>{c.icon ? label : c.short}</span> : c.short}
-    </span>
+    </Tip>
   );
 }
 

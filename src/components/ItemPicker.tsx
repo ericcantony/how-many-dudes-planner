@@ -111,7 +111,7 @@ export function ItemPicker({ open, title, items, selected, relevant, multi, give
                     {it.name}
                     {scopeLabel(it) && <span className="item-scope">{scopeLabel(it)}</span>}
                     {gives?.get(it.id)?.map((s) => (
-                      <ColChip key={s} col={s} compact />
+                      <ColChip key={s} col={s} compact inButton />
                     ))}
                   </span>
                   <span className="item-desc">
