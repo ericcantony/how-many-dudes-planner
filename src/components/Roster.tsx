@@ -233,6 +233,43 @@ const fmtStat = (s: ShownStat) => {
 };
 
 /** Tooltip body for one stat: name, base → buffed value, and each source on its own line. */
+/** Attack Power to 1 decimal (like the rest of the site), Attack Speed to 2. */
+const fmtFactor = (key: string, n: number) => {
+  const k = key === 'attack_speed' ? 100 : 10;
+  return String(Math.round(n * k) / k);
+};
+
+/** "Attack Power 14.3 → 17.2 × Attack Speed 1.4": what DPS is made of. */
+function DpsFactors({ factors }: Readonly<{ factors: NonNullable<ShownStat['factors']> }>) {
+  return (
+    <span className="tip-factors">
+      {factors.map((f, i) => {
+        const changed = Math.abs(f.value - f.base) > 0.001;
+        return (
+          <span key={f.key} className="tip-factor">
+            {i > 0 && (
+              <span className="tip-times" aria-label="times">
+                ×
+              </span>
+            )}
+            <StatIcon id={f.icon} size={14} />
+            <span>{f.label}</span>
+            <span className="tip-factor-value">
+              {changed ? (
+                <>
+                  {fmtFactor(f.key, f.base)} → <strong>{fmtFactor(f.key, f.value)}</strong>
+                </>
+              ) : (
+                <strong>{fmtFactor(f.key, f.value)}</strong>
+              )}
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 function StatTip({ stat, buffed }: Readonly<{ stat: ShownStat; buffed: boolean }>) {
   return (
     <>
@@ -240,6 +277,7 @@ function StatTip({ stat, buffed }: Readonly<{ stat: ShownStat; buffed: boolean }
         <StatIcon id={stat.icon} size={16} />
         {stat.label}
       </span>
+      {stat.factors && <DpsFactors factors={stat.factors} />}
       {buffed ? (
         <>
           <span className="tip-value">

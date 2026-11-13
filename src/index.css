@@ -2445,3 +2445,62 @@ fieldset.stepper {
   gap: 8px;
   flex-wrap: wrap;
 }
+
+.tip-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.tip-factor {
+  display: grid;
+  grid-template-columns: 14px 14px auto 1fr;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2);
+}
+
+.tip-factor:first-child {
+  grid-template-columns: 14px auto 1fr;
+  padding-left: 20px;
+}
+
+.tip-times {
+  font-weight: 800;
+  color: var(--muted);
+  text-align: center;
+}
+
+.tip-factor-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tip-factor-value strong {
+  font-family: var(--display);
+  color: var(--ink);
+}
+
+/* ---------- Relic stash ---------- */
+
+.rs-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rs-head .panel-title {
+  margin: 0;
+}
+
+.relic-stash > .muted {
+  margin: 4px 0 10px;
+}
+
+.relic-stash .offer-chart p {
+  margin: 6px 0 0;
+  color: var(--ink-2);
+}

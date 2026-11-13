@@ -4,7 +4,7 @@ import { DudePicker } from './components/DudePicker';
 import { ItemPicker } from './components/ItemPicker';
 import { Roster } from './components/Roster';
 import { Modal, Sprite } from './components/bits';
-import { dudeById, relics, SCRAPED_AT, SOURCE, trinkets } from './data/game';
+import { dudeById, relicById, relics, SCRAPED_AT, SOURCE, trinkets } from './data/game';
 import {
   compFromHash,
   decodeComp,
@@ -31,6 +31,7 @@ import { CREDITS } from './credits';
 import { ChartView } from './components/ChartView';
 import { FlyerBar, RunStart } from './components/FlyerBar';
 import { RecruitHelper } from './components/RecruitHelper';
+import { RelicStash } from './components/RelicStash';
 import { ratioPlan } from './lib/ratio';
 import { teamStats } from './lib/stats';
 
@@ -335,6 +336,16 @@ export default function App() {
                   })
                 }
                 onResetTargets={() => patch({ targets: {} })}
+              />
+            )}
+            {comp.roster.length > 0 && (
+              <RelicStash
+                comp={comp}
+                relevant={analysis.relevantRelics}
+                onTake={(id) => {
+                  setComp((c) => (c.relics.includes(id) ? c : { ...c, relics: [...c.relics, id] }));
+                  flash(`Added ${relicById.get(id)?.name ?? 'Relic'} to Planned Relics`);
+                }}
               />
             )}
             <Roster

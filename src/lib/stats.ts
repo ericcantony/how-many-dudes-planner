@@ -68,6 +68,8 @@ export interface ShownStat {
   sources: string[];
   /** Each new source is reduced by the existing value. */
   diminishing: boolean;
+  /** For DPS: the stats it's made of (Attack Power × Attack Speed), base and buffed. */
+  factors?: { key: string; label: string; icon: string; base: number; value: number }[];
 }
 
 export interface EntryStats {
@@ -303,6 +305,12 @@ function diminish(base: number, mods: Mod[]): { value: number; sources: string[]
 
 const CORE = new Set(['hpmax', 'dps', 'speed']);
 
+/** DPS = Attack Power × Attack Speed; shown in the DPS tooltip. */
+const DPS_FACTORS = [
+  { key: 'damage', label: 'Attack Power', icon: 'sp_stat_damage' },
+  { key: 'attack_speed', label: 'Attack Speed', icon: 'sp_stat_attack_speed' },
+];
+
 export function teamStats(comp: Comp): Map<string, EntryStats> {
   const team = new Team(comp);
   abilityMods(team);
@@ -320,7 +328,9 @@ export function teamStats(comp: Comp): Map<string, EntryStats> {
       const { value, sources } = combine(base, s.key, list);
       const core = CORE.has(s.key);
       if (core || value > 0) {
-        stats.push({ key: s.key, label: s.label, icon: s.icon, base, value, percent: !core, sources, diminishing: DIMINISHING.has(s.key) });
+        const shown: ShownStat = { key: s.key, label: s.label, icon: s.icon, base, value, percent: !core, sources, diminishing: DIMINISHING.has(s.key) };
+        if (s.key === 'dps') shown.factors = DPS_FACTORS.map((f) => ({ ...f, base: statNum(d, f.key), value: combine(statNum(d, f.key), f.key, list).value }));
+        stats.push(shown);
       }
     }
     const f = familyOf(e.dude);
