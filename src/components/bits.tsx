@@ -12,6 +12,7 @@ import {
 import { createPortal } from 'react-dom';
 import { familyById, sprite, type Token } from '../data/game';
 import { CELL_LABELS, columnById, COLUMNS, dudeCells, type Cell } from '../data/chart';
+import type { Grade } from '../lib/flyer';
 
 /** Stable keys from each token's own content; a counter only tells repeats of the same text apart. */
 function keyTokens(tokens: Token[]) {
@@ -135,6 +136,39 @@ export function Tip({
         </span>,
         document.body,
       ),
+  );
+}
+
+const GRADES: { grade: Grade; label: string; range: string }[] = [
+  { grade: '++', label: 'Great pick', range: 'score 4 or more' },
+  { grade: '+', label: 'Good pick', range: 'score 1.5 to 4' },
+  { grade: '0', label: 'Okay', range: 'score around 0' },
+  { grade: '−', label: 'Weak pick', range: 'score below −0.5' },
+];
+
+/** The ++ / + / 0 / − badge on flyer and Relic cards, with a tooltip explaining the grade and its score. */
+export function GradeBadge({ grade, score }: Readonly<{ grade: Grade; score: number }>) {
+  const info = GRADES.find((g) => g.grade === grade)!;
+  const tip = (
+    <>
+      <span className="tip-title">{info.label}</span>
+      <span className="tip-value">
+        Score <strong>{Math.round(score * 10) / 10}</strong>, from the reasons listed on the card
+      </span>
+      <span className="tip-scale">
+        {GRADES.map((g) => (
+          <span key={g.grade} className={g.grade === grade ? 'current' : ''}>
+            <b>{g.grade}</b> {g.label}: {g.range}
+          </span>
+        ))}
+      </span>
+    </>
+  );
+  return (
+    <Tip className="grade" content={tip}>
+      {grade}
+      <span className="sr-only"> {info.label}</span>
+    </Tip>
   );
 }
 

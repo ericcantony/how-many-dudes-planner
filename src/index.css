@@ -679,21 +679,28 @@ button {
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
+  line-height: 1.3;
 }
 
+/* Every note chip has the same height, padding and border, whatever its kind. */
 .row-notes li {
-  padding: 2px 8px;
-  border-radius: var(--radius-s);
-  background: var(--info-bg);
-  display: inline-block;
-}
-
-.row-notes li.relic-note {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  min-height: 28px;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+  background: var(--info-bg);
+}
+
+.row-notes li .sprite {
+  width: 16px;
+  height: 16px;
 }
 
 .link-note.ability {
@@ -709,7 +716,8 @@ button {
 
 .link-note.in {
   background: var(--sheet);
-  border: 1px dashed var(--line);
+  border-style: dashed;
+  border-color: var(--line);
   box-shadow: none;
 }
 
@@ -2503,4 +2511,30 @@ fieldset.stepper {
 .relic-stash .offer-chart p {
   margin: 6px 0 0;
   color: var(--ink-2);
+}
+
+.tip-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.tip-scale b {
+  display: inline-block;
+  min-width: 1.6em;
+  font-family: var(--display);
+  color: var(--ink-2);
+}
+
+.tip-scale .current {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.tip-scale .current b {
+  color: var(--ink);
 }

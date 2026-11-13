@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { dudeById, familyById, relicById, relics } from '../data/game';
 import type { Comp } from '../lib/comp';
 import { gradeRelic, type RelicGrade } from '../lib/relicPick';
-import { Desc, Sprite } from './bits';
+import { GradeBadge, Desc, Sprite } from './bits';
 import { ItemPicker } from './ItemPicker';
 
 interface Props {
@@ -15,7 +15,6 @@ interface Props {
 
 const SLOTS = [0, 1, 2];
 
-const GRADE_LABEL: Record<string, string> = { '++': 'Great pick', '+': 'Good pick', '0': 'Okay', '−': 'Weak pick' };
 const GRADE_CLASS: Record<string, string> = { '++': 'g-great', '+': 'g-good', '0': 'g-ok', '−': 'g-weak' };
 
 function reasonClass(delta: number) {
@@ -132,10 +131,7 @@ function RelicCard({
           <h4>{r.name}</h4>
           <span className="item-scope">{scopeLabel(g.relic)}</span>
         </div>
-        <span className="grade" title={GRADE_LABEL[g.grade]}>
-          {g.grade}
-          <span className="sr-only"> {GRADE_LABEL[g.grade]}</span>
-        </span>
+        <GradeBadge grade={g.grade} score={g.score} />
       </header>
       <ul className="reasons">
         {g.reasons.map((x) => (

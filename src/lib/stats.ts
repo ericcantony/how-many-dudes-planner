@@ -311,12 +311,144 @@ const DPS_FACTORS = [
   { key: 'attack_speed', label: 'Attack Speed', icon: 'sp_stat_attack_speed' },
 ];
 
+/**
+ * Relics that trigger off a Dude's *timed* ability ("Every N seconds…"), so they fire reliably.
+ * Their buffs count as stats, scaled by uptime = buff duration ÷ ability interval (capped at 1).
+ * Targets: self = the owner, below/above = the Dude Type next to him on the Roster,
+ * spread = one random other Dude at a time (shared evenly across your other Dudes).
+ * One stack is counted; more copies of the owner can stack some of these higher.
+ */
+export interface TimedRule {
+  owner: string;
+  ability: string;
+  targets: ('self' | 'below' | 'above' | 'spread')[];
+  mods: { stat: string; value: number }[];
+  uptime: number;
+  /** Multiply the bonus by the owner's count (e.g. "per Broadcaster Dude"). */
+  perOwner?: boolean;
+  /** Shown in the relic grade, e.g. that nearby Dudes may benefit too. */
+  note?: string;
+}
+
+export const TIMED_RULES: Record<string, TimedRule> = {
+  'Imposing Podium': { owner: 'general', ability: 'Tactical Command', targets: ['below'], mods: [{ stat: 'toughness', value: 10 }], uptime: 1, note: 'More General Dudes stack it higher (up to 5).' },
+  'Combat Radio': {
+    owner: 'general',
+    ability: 'Tactical Command',
+    targets: ['below'],
+    mods: [
+      { stat: 'damage', value: 15 },
+      { stat: 'crit_chance', value: 5 },
+      { stat: 'cleave', value: 30 },
+    ],
+    uptime: 1,
+    note: 'More General Dudes stack it higher (up to 10).',
+  },
+  'Shock Helmet': { owner: 'trooper', ability: 'Orbital Strike', targets: ['self'], mods: [{ stat: 'toughness', value: 10 }], uptime: 1 },
+  'Handheld Microphone': { owner: 'broadcaster', ability: 'Play by Play', targets: ['self'], mods: [{ stat: 'block_chance', value: 20 }], uptime: 2 / 3 },
+  'UFO Wax': { owner: 'alien', ability: 'Tractor Beam', targets: ['self', 'above'], mods: [{ stat: 'deflection', value: 15 }], uptime: 1 },
+  'RAD Infusion': {
+    owner: 'alien',
+    ability: 'Tractor Beam',
+    targets: ['above'],
+    mods: [
+      { stat: 'damage', value: 25 },
+      { stat: 'crit_chance', value: 5 },
+    ],
+    uptime: 2 / 3,
+  },
+  'Supply Drop': {
+    owner: 'trooper',
+    ability: 'Orbital Strike',
+    targets: ['self'],
+    mods: [
+      { stat: 'damage', value: 5 },
+      { stat: 'attack_speed', value: 2 },
+      { stat: 'crit_chance', value: 1 },
+    ],
+    uptime: 0.5,
+    note: 'Counted for the Trooper only; Dudes near the strike may also get it.',
+  },
+  'Knee Sleeve': { owner: 'basketball', ability: 'Dunk', targets: ['self'], mods: [{ stat: 'evasion', value: 5 }], uptime: 4 / 7, note: 'Counted for the Basketball Dude only; nearby Dudes may also get it.' },
+  'Tall Socks': { owner: 'basketball', ability: 'Dunk', targets: ['self'], mods: [{ stat: 'crit_chance', value: 1 }], uptime: 4 / 7, note: 'Counted for the Basketball Dude only; nearby Dudes may also get it.' },
+  Spurs: {
+    owner: 'western',
+    ability: 'Lasso',
+    targets: ['self'],
+    mods: [
+      { stat: 'crit_chance', value: 2 },
+      { stat: 'damage', value: 5 },
+    ],
+    uptime: 1,
+    note: 'Counted for the Cowboy only; nearby Dudes may also get it.',
+  },
+  Moonshine: { owner: 'western', ability: 'Lasso', targets: ['spread'], mods: [{ stat: 'toughness', value: 30 }], uptime: 1, note: 'Lassoed Dudes are random, so the bonus is shared across your other Dudes.' },
+  'Trophy Cup': {
+    owner: 'broadcaster',
+    ability: 'Play by Play',
+    targets: ['spread'],
+    mods: [
+      { stat: 'damage', value: 10 },
+      { stat: 'cleave', value: 10 },
+      { stat: 'crit_chance', value: 1 },
+    ],
+    uptime: 1,
+    perOwner: true,
+    note: 'The MVP is random, so the bonus is shared across your other Dudes.',
+  },
+};
+
+/** Why a timed Relic does nothing right now (e.g. nothing below the General), or null if it works. */
+export function timedTargetIssue(comp: Comp, relicName: string): string | null {
+  const rule = TIMED_RULES[relicName];
+  if (!rule) return null;
+  const i = comp.roster.findIndex((e) => e.dude === rule.owner);
+  if (i < 0) return null;
+  const owner = dudeById.get(rule.owner)?.name ?? rule.owner;
+  if (rule.targets.includes('below') && !comp.roster[i + 1]) return `No Dude Type below ${owner}: ${rule.ability} has no target.`;
+  if (rule.targets.includes('above') && rule.targets.length === 1 && i === 0) return `No Dude Type above ${owner}: ${rule.ability} has no target.`;
+  if (rule.targets.includes('spread') && comp.roster.every((e) => e.dude === rule.owner)) return `No other Dudes for ${rule.ability} to target.`;
+  return null;
+}
+
+function timedTargets(team: Team, rule: TimedRule, i: number): { entry: Entry; share: number }[] {
+  const { roster } = team;
+  const out: { entry: Entry; share: number }[] = [];
+  for (const t of rule.targets) {
+    if (t === 'self') out.push({ entry: roster[i], share: 1 });
+    if (t === 'below' && roster[i + 1]) out.push({ entry: roster[i + 1], share: 1 });
+    if (t === 'above' && roster[i - 1]) out.push({ entry: roster[i - 1], share: 1 });
+    if (t === 'spread') {
+      const others = roster.filter((e) => e.dude !== rule.owner);
+      const otherDudes = others.reduce((s, e) => s + e.count, 0);
+      // One target at a time (per owner, unless the bonus already scales per owner), spread over every other Dude.
+      const active = rule.perOwner ? 1 : team.countOf(rule.owner);
+      for (const e of others) out.push({ entry: e, share: Math.min(1, active / Math.max(1, otherDudes)) });
+    }
+  }
+  return out;
+}
+
+/** Reliable-trigger Relics (see TIMED_RULES), applied as uptime-weighted stats. */
+function timedMods(team: Team) {
+  for (const [name, rule] of Object.entries(TIMED_RULES)) {
+    if (!team.has(name)) continue;
+    const i = team.roster.findIndex((e) => e.dude === rule.owner);
+    if (i < 0) continue;
+    const scale = rule.uptime * (rule.perOwner ? team.countOf(rule.owner) : 1);
+    for (const { entry, share } of timedTargets(team, rule, i)) {
+      for (const m of rule.mods) team.add(entry, m.stat, m.value * scale * share, name);
+    }
+  }
+}
+
 export function teamStats(comp: Comp): Map<string, EntryStats> {
   const team = new Team(comp);
   abilityMods(team);
   rosterRelicMods(team);
   neighbourRelicMods(team);
   parsedMods(team, comp);
+  timedMods(team);
 
   const out = new Map<string, EntryStats>();
   for (const e of team.roster) {

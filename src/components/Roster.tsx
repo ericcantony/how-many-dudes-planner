@@ -522,7 +522,7 @@ function Row(p: Readonly<RowProps>) {
           ))}
           {plannedOwn.map((r) => (
             <li key={r} className="note relic-note">
-              <Sprite id={relicById.get(r)!.icon} size={18} /> {relicById.get(r)!.name}
+              <Sprite id={relicById.get(r)!.icon} size={16} /> {relicById.get(r)!.name}
             </li>
           ))}
         </ul>

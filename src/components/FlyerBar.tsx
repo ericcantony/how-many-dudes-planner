@@ -3,7 +3,7 @@ import { columnById } from '../data/chart';
 import { dudeById, dudes } from '../data/game';
 import { MAX_TYPES, type Flyer } from '../lib/comp';
 import { FLYER_STAGES, gradeOption, suggestFocus, type OptionGrade } from '../lib/flyer';
-import { ChartLines, FamilyTag, Sprite } from './bits';
+import { GradeBadge, ChartLines, FamilyTag, Sprite } from './bits';
 import { ItemPicker } from './ItemPicker';
 
 interface StartProps {
@@ -236,7 +236,6 @@ export function FlyerBar({
   );
 }
 
-const GRADE_LABEL: Record<string, string> = { '++': 'Great pick', '+': 'Good pick', '0': 'Okay', '−': 'Weak pick' };
 const GRADE_CLASS: Record<string, string> = { '++': 'g-great', '+': 'g-good', '0': 'g-ok', '−': 'g-weak' };
 
 function reasonClass(delta: number) {
@@ -268,10 +267,7 @@ function OfferCard({
           <h4>{dude.name}</h4>
           <FamilyTag id={dude.family} />
         </div>
-        <span className="grade" title={GRADE_LABEL[g.grade]}>
-          {g.grade}
-          <span className="sr-only"> {GRADE_LABEL[g.grade]}</span>
-        </span>
+        <GradeBadge grade={g.grade} score={g.score} />
       </header>
       <ul className="reasons">
         {g.reasons.map((r) => (
