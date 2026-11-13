@@ -139,7 +139,7 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
       <details className="legend-box">
         <summary>Colour key</summary>
         <CellLegend />
-        <p className="muted small">From a community synergy chart on r/HowManyDudes.</p>
+        <p className="muted small">From the synergy chart by u/esmgcito on r/HowManyDudes.</p>
       </details>
     </section>
   );

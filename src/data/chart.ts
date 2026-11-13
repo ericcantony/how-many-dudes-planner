@@ -1,7 +1,7 @@
 import { relics, type Relic, type Token } from './game';
 
 /**
- * Synergy chart transcribed from a community post on r/HowManyDudes ("Dude classes are difficult
+ * Synergy chart by u/esmgcito, transcribed from their r/HowManyDudes post ("Dude classes are difficult
  * to remember"). Each Dude (and Family) row marks how it relates to a stat:
  *   G = its Relics/ability give the stat to any Dude Type (including itself)
  *   Y = gives the stat to other Dude Types
