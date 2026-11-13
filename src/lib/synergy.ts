@@ -155,6 +155,9 @@ export function analyse(comp: Comp): Analysis {
     if (planned.has(rid("Captain's Hat"))) note(top, { tone: 'good', text: "Captain's Hat: +30% Attack Power (top of Roster)." });
     if (planned.has(rid('Caboose'))) note(end, { tone: 'good', text: 'Caboose: +30% Max HP (end of Roster).' });
     if (planned.has(rid('Black Sheep'))) note(end, { tone: 'good', text: 'Black Sheep: Taunts up to 5 enemies at battle start.' });
+    if (planned.has(rid("Lieutenant's Sigil")) && roster[2]) {
+      note(roster[2], { tone: 'good', text: "Lieutenant's Sigil: +10% Crit Chance (third on Roster)." });
+    }
   }
 
   // ----- Count-based abilities -----

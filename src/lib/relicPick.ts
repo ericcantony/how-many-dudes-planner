@@ -2,7 +2,7 @@ import { cellOf, columnById, givesToTeam, RELIC_GIVES, scales } from '../data/ch
 import { dudeById, familyById, relicById, tokensText, type Relic } from '../data/game';
 import type { Comp } from './comp';
 import type { Grade, Reason } from './flyer';
-import { teamStats, TIMED_RULES, timedTargetIssue } from './stats';
+import { isConditional, POSITION_RELICS, positionTarget, slotLabel, teamStats, TIMED_RULES, timedTargetIssue } from './stats';
 
 /**
  * Relic stash helper: grade each offered Relic for combat, like the flyer helper does for Dudes.
@@ -69,14 +69,26 @@ function reachReasons(r: Relic, comp: Comp): { reasons: Reason[]; usable: boolea
     const mine = (r.dudes ?? []).filter((d) => comp.roster.some((e) => e.dude === d));
     const names = (r.dudes ?? []).map((d) => dudeById.get(d)?.name ?? d);
     if (!mine.length) return { usable: false, reasons: [{ delta: -4, text: `For ${list(names)}, who isn’t on your Roster.` }] };
-    const n = countIn((d) => mine.includes(d));
-    return { usable: true, reasons: [{ delta: 0, text: `For your ${list(mine.map((d) => dudeById.get(d)!.name))} (${n} of ${total} Dudes).` }] };
+    if (!POSITION_RELICS[r.name]) {
+      const n = countIn((d) => mine.includes(d));
+      return { usable: true, reasons: [{ delta: 0, text: `For your ${list(mine.map((d) => dudeById.get(d)!.name))} (${n} of ${total} Dudes).` }] };
+    }
   }
+  // Position Relics buff one Roster slot (top, end, third, right below X), whatever its Family.
+  const pos = POSITION_RELICS[r.name];
+  if (pos) {
+    const target = positionTarget(comp.roster, pos);
+    if (!target) return { usable: false, reasons: [{ delta: -1, text: `Nothing ${slotLabel(pos)} yet, so it has no target.` }] };
+    const name = dudeById.get(target.dude)!.name;
+    const who = target.count === 1 ? `your 1 ${name}` : `your ${target.count} ${name}s`;
+    const what = pos.effect ? `: ${pos.effect}` : '';
+    return { usable: true, reasons: [{ delta: 0, text: `Only for ${who}, the Dude Type ${slotLabel(pos)}${what} (${target.count} of ${total} Dudes).` }] };
+  }
+  // A Family only says which pool the Relic comes from; its text decides who it affects, and no
+  // Family Relic is limited to that Family's Dudes.
   if (r.scope === 'family' && r.family) {
     const fam = familyById.get(r.family)?.name ?? r.family;
-    const n = countIn((d) => dudeById.get(d)?.family === r.family);
-    if (!n) return { usable: false, reasons: [{ delta: -3, text: `${fam} Family Relic, and you have no ${fam} Dudes.` }] };
-    return { usable: true, reasons: [{ delta: 0.5, text: `${fam} Family Relic: reaches ${n} of your ${total} Dudes.` }] };
+    return { usable: true, reasons: [{ delta: 0.5, text: `Works for your whole team (from the ${fam} Family pool).` }] };
   }
   return { usable: true, reasons: [{ delta: 0.5, text: 'Works for any team.' }] };
 }
@@ -85,9 +97,50 @@ function reachReasons(r: Relic, comp: Comp): { reasons: Reason[]; usable: boolea
  * Stats it gives that your build cares about: focus stats, or stats your Dudes scale with.
  * For conditional Relics (effect only when something happens) these count half.
  */
+/** Text that means a Dude Relic also reaches other Dudes (not "eats another Dude"). */
+const REACHES_OTHERS = /\b(all (nearby )?Dudes|nearby Dudes|Roster Dudes?|any Dude|a Dude)\b/i;
+
+/**
+ * Whether the stats a Relic grants land on other Dudes. Only the recipients count: the subject
+ * before "gains" ("The Frankendude gains…" = only him) or the object after "grants"
+ * ("he grants all nearby Dudes…" = others). Other mentions ("donates HP to a Dude") don't.
+ */
+function grantsToOthers(r: Relic): boolean {
+  const sentences = tokensText(r.desc).split(/(?<=\.)\s+/);
+  return sentences.some((s) => {
+    const subject = /^(.*?)\bgains?\b/i.exec(s)?.[1] ?? '';
+    const object = /\bgrants?\b(.*?)(\d|$)/i.exec(s)?.[1] ?? '';
+    return REACHES_OTHERS.test(subject) || REACHES_OTHERS.test(object);
+  });
+}
+
+/**
+ * Dude Types a Relic's bonuses actually land on. Global and Family Relics: everyone.
+ * Dude Relics: that Dude, plus the Roster neighbour or other Dudes when a timed rule or the text says so.
+ */
+function reachedTypes(r: Relic, comp: Comp): { types: string[]; selfOnly: boolean } {
+  const all = [...new Set(comp.roster.map((e) => e.dude))];
+  const pos = POSITION_RELICS[r.name];
+  if (pos) {
+    const target = positionTarget(comp.roster, pos);
+    return { types: target ? [target.dude] : [], selfOnly: false };
+  }
+  if (r.scope !== 'dude') return { types: all, selfOnly: false };
+  const own = all.filter((d) => r.dudes?.includes(d));
+  const rule = TIMED_RULES[r.name];
+  if (rule?.targets.includes('spread') || grantsToOthers(r)) return { types: all, selfOnly: false };
+  const extra: string[] = [];
+  const i = comp.roster.findIndex((e) => e.dude === rule?.owner);
+  if (rule && i >= 0) {
+    if (rule.targets.includes('below') && comp.roster[i + 1]) extra.push(comp.roster[i + 1].dude);
+    if (rule.targets.includes('above') && comp.roster[i - 1]) extra.push(comp.roster[i - 1].dude);
+  }
+  return { types: [...new Set([...own, ...extra])], selfOnly: extra.length === 0 };
+}
+
 function fitReasons(r: Relic, comp: Comp, conditional: boolean): Reason[] {
   const gives = RELIC_GIVES.get(r.id) ?? [];
-  const types = [...new Set(comp.roster.map((e) => e.dude))];
+  const { types, selfOnly } = reachedTypes(r, comp);
   const out: Reason[] = [];
   const weight = conditional ? 0.5 : 1;
   const when = conditional ? ', only when it triggers' : '';
@@ -104,8 +157,10 @@ function fitReasons(r: Relic, comp: Comp, conditional: boolean): Reason[] {
     const verb = who.length === 1 ? 'scales' : 'scale';
     out.push({ delta: weight, text: `Gives ${list(scaled.map((c) => columnById.get(c)!.label))}, which ${list(who)} ${verb} with${when}.` });
   }
-  const healers = types.filter((d) => givesToTeam(cellOf(d, 'heal')));
-  if (gives.includes('heal') && !healers.length && types.length) {
+  // Only healing that reaches other Dudes fills the team's healer gap (not a Dude healing himself).
+  const team = [...new Set(comp.roster.map((e) => e.dude))];
+  const healers = team.filter((d) => givesToTeam(cellOf(d, 'heal')));
+  if (gives.includes('heal') && !selfOnly && !healers.length && team.length) {
     out.push({ delta: 1.5 * weight, text: `Adds healing, and nobody on your team heals others yet${when}.` });
   }
   return out;
@@ -131,6 +186,32 @@ function positionReason(comp: Comp, relicName: string): Reason | null {
 
 const ECONOMY = /\$|merchant|restock|stocked|price|shop/i;
 
+/** Where Summoned Dudes come from: Dudes whose ability summons, and planned Relics that summon at battle start or on KO. */
+const SUMMON_DUDES: Record<string, string> = { necromancer: 'Skeledudes', quantum: 'Echo Dudes' };
+const SUMMON_RELICS: Record<string, string> = { 'Ancient Sword': 'Skeledudes', 'Living Hand': 'Skeledudes', Gravestone: 'Skeledudes' };
+
+function summonSources(comp: Comp): string[] {
+  const fromDudes = comp.roster
+    .filter((e) => SUMMON_DUDES[e.dude])
+    .map((e) => `${SUMMON_DUDES[e.dude]} from your ${dudeById.get(e.dude)!.name}`);
+  const fromRelics = comp.relics
+    .map((id) => relicById.get(id)?.name ?? '')
+    .filter((n) => SUMMON_RELICS[n])
+    .map((n) => `${SUMMON_RELICS[n]} from ${n}`);
+  return [...fromDudes, ...fromRelics];
+}
+
+/** Relic-specific checks the general rules can't see. */
+const SPECIAL_REASONS: Record<string, (comp: Comp) => Reason> = {
+  // "He simply eats another Dude… preferring to eat Summoned Dudes": without summons he eats a real one.
+  'Jaw Implant': (comp) => {
+    const sources = summonSources(comp);
+    return sources.length
+      ? { delta: 0.5, text: `He eats a Summoned Dude first (${list(sources)}), not one of your real Dudes.` }
+      : { delta: -1.5, text: 'No Summoned Dudes on your team, so he’d eat one of your real Dudes.' };
+  },
+};
+
 export function gradeRelic(relicId: string, comp: Comp): RelicGrade {
   const r = relicById.get(relicId)!;
   const reasons: Reason[] = [];
@@ -152,8 +233,13 @@ export function gradeRelic(relicId: string, comp: Comp): RelicGrade {
     if (hpGain >= 0.5) reasons.push({ delta: Math.min(2.5, hpGain / 5), text: `Team survivability +${pct(hpGain)} (HP and damage avoided, measured on your Roster).` });
   }
   const measurable = dpsGain >= 0.5 || hpGain >= 0.5;
+  // Conditional comes from the text ("When…", "chance"), not from whether we could measure it.
+  const conditional = !measurable && isConditional(r.desc);
   if (measurable) reasons.push({ delta: 0.5, text: 'Always active: you get this in every battle.' });
-  if (reach.usable && comp.roster.length) reasons.push(...fitReasons(r, comp, !measurable));
+  if (reach.usable && comp.roster.length) reasons.push(...fitReasons(r, comp, conditional));
+
+  const special = reach.usable ? SPECIAL_REASONS[r.name]?.(comp) : undefined;
+  if (special) reasons.push(special);
 
   // Relics that fire off a timed ability: explain a missing target, who gets it, or what's assumed.
   const timed = TIMED_RULES[r.name];
@@ -167,8 +253,12 @@ export function gradeRelic(relicId: string, comp: Comp): RelicGrade {
 
   const text = tokensText(r.desc);
   if (reach.usable && !measurable && !issue) {
-    if (ECONOMY.test(text) && !(RELIC_GIVES.get(relicId) ?? []).length) {
+    const gives = RELIC_GIVES.get(relicId) ?? [];
+    if (ECONOMY.test(text) && !gives.length) {
       reasons.push({ delta: 0, text: 'Economy Relic: helps your money or shop, not combat directly.' });
+    } else if (!conditional) {
+      const what = gives.length ? list(gives.map((c) => columnById.get(c)!.label)) : 'its effect';
+      reasons.push({ delta: 0.5, text: `Always active, but ${what} isn’t counted in these numbers. Read the text.` });
     } else {
       reasons.push({ delta: 0, text: 'Its effect depends on battle (triggers, chances or timers), so it can’t be measured here. Read the text.' });
     }

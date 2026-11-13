@@ -48,7 +48,17 @@ const MULTIPLICATIVE = new Set(['hpmax', 'damage', 'attack_speed', 'speed']);
 export const DIMINISHING = new Set(['toughness', 'evasion', 'deflection', 'block_chance', 'crit_chance']);
 
 /** Phrases that make a bonus conditional or temporary, so it isn't counted. */
-const CONDITIONAL = /\b(when|whenever|if|every|while|after|before|chance|during|once|seconds?|until|first|instead)\b/i;
+// "now" marks an ability change ("Bear Form now grants…", "Tractor Beam now targets…"): it only
+// matters while that ability is in use, so it counts as conditional.
+const CONDITIONAL = /\b(when|whenever|if|every|while|after|before|chance|during|once|seconds?|until|first|instead|now)\b/i;
+
+/**
+ * Whether a Relic's main effect (its first sentence) only happens sometimes: "When…", "chance",
+ * "for 3 seconds". "For every / for each [X Dude]" is a per-copy bonus, not a trigger.
+ */
+export function isConditional(desc: Token[]): boolean {
+  return firstClause(desc).some(([k, t]) => k === 't' && CONDITIONAL.test(t.replaceAll(/\bfor (every|each)\b/gi, '')));
+}
 
 export interface Mod {
   stat: string;
@@ -87,11 +97,36 @@ const nameIs = (text: string, dude: string) => {
 function firstSentence(desc: Token[]): Token[] {
   const out: Token[] = [];
   for (const tok of desc) {
-    if (tok[0] === 't' && tok[1].includes('.')) {
-      out.push(['t', tok[1].slice(0, tok[1].indexOf('.'))]);
+    const end = tok[0] === 't' ? tok[1].search(/[.!]/) : -1;
+    if (end >= 0) {
+      out.push(['t', tok[1].slice(0, end)]);
       break;
     }
     out.push(tok);
+  }
+  return out;
+}
+
+/**
+ * The first sentence up to where a new clause starts: ", and his Blood Pump grants…" begins a
+ * new clause, but ", and [20%] [Deflection]" just continues a list of stats.
+ */
+function firstClause(desc: Token[]): Token[] {
+  const sentence = firstSentence(desc);
+  const out: Token[] = [];
+  for (let i = 0; i < sentence.length; i++) {
+    const [kind, text] = sentence[i];
+    const cut = kind === 't' ? text.search(/, and\b/) : -1;
+    if (cut >= 0) {
+      const rest = text.slice(cut + ', and'.length).trim();
+      const next = sentence[i + 1];
+      const continuesList = rest === '' && next?.[0] === 'v' && /%$/.test(next[1]);
+      if (!continuesList && !/^\[?\d/.test(rest)) {
+        out.push(['t', text.slice(0, cut)]);
+        return out;
+      }
+    }
+    out.push(sentence[i]);
   }
   return out;
 }
@@ -107,10 +142,13 @@ interface ParsedBonus {
 
 /** "The [X Dude] gains [20%] [Max HP] and [10%] [Deflection]" and similar always-on bonuses. */
 function parseBonus(desc: Token[], rosterTypes: string[]): ParsedBonus | null {
-  const sentence = firstSentence(desc);
+  // Judge only the first clause, so "gains 30% Max HP, and his Blood Pump grants … for 5 seconds"
+  // still counts the always-on Max HP.
+  const sentence = firstClause(desc);
   // "for every / for each [X Dude]" is a per-copy bonus, not a trigger, so ignore it for this check.
   if (sentence.some(([k, t]) => k === 't' && CONDITIONAL.test(t.replaceAll(/\bfor (every|each)\b/gi, '')))) return null;
-  const gainAt = sentence.findIndex(([k, t]) => k === 't' && /\bgains?\b/.test(t));
+  // "gains" is the usual verb; Thagomizer says "Cave Dude get 10% Crit Chance!".
+  const gainAt = sentence.findIndex(([k, t]) => k === 't' && /\b(gains?|gets?)\b/.test(t));
   if (gainAt < 0) return null;
 
   const subject = sentence.slice(0, gainAt + 1);
@@ -142,7 +180,18 @@ function parseBonus(desc: Token[], rosterTypes: string[]): ParsedBonus | null {
 }
 
 /** Relics whose effect depends on the whole Roster: handled by hand rather than parsed. */
-const SPECIAL = new Set(['Bonfire', 'Sensitivity Training', "Captain's Hat", 'Caboose', 'Championship Belt', 'Employee Award', 'Warm Bench']);
+const SPECIAL = new Set([
+  'Bonfire',
+  'Sensitivity Training',
+  "Captain's Hat",
+  'Caboose',
+  'Black Sheep',
+  "Lieutenant's Sigil",
+  'Assistant Coach',
+  'Championship Belt',
+  'Employee Award',
+  'Warm Bench',
+]);
 
 /** Shared lookups for one Roster. */
 class Team {
@@ -214,9 +263,73 @@ function rosterRelicMods(team: Team) {
   if (!roster.length) return;
   if (team.has('Bonfire')) bonfire(team);
   if (team.has('Sensitivity Training')) sensitivityTraining(team);
-  if (team.has("Captain's Hat")) team.add(roster[0], 'damage', 30, "Captain's Hat");
-  if (team.has('Caboose')) team.add(roster.at(-1)!, 'hpmax', 30, 'Caboose');
   if (team.has('Championship Belt')) championshipBelt(team);
+  for (const [name, rule] of Object.entries(POSITION_RELICS)) {
+    if (!team.has(name) || !rule.mods.length) continue;
+    const target = positionTarget(roster, rule);
+    if (!target) continue;
+    const times = rule.perOwner ? Math.min(team.countOf(rule.perOwner), rule.maxTimes ?? Infinity) : 1;
+    const boost = rule.quadrupleFor === target.dude ? 4 : 1;
+    for (const m of rule.mods) team.add(target, m.stat, m.value * times * boost, name);
+  }
+}
+
+/**
+ * Relics that buff one Roster position, not a Dude Type or Family.
+ * slot: 'top' | 'end' | a 1-based position | 'below' (the Dude Type right below `owner`).
+ */
+export interface PositionRule {
+  slot: 'top' | 'end' | 'below' | number;
+  /** For slot 'below': whose position it's measured from. */
+  owner?: string;
+  mods: { stat: string; value: number }[];
+  /** Multiply by this Dude's count (e.g. "per Coach Dude"), capped at maxTimes. */
+  perOwner?: string;
+  maxTimes?: number;
+  /** "Quadrupled if the target is a Regular Dude". */
+  quadrupleFor?: string;
+  /** What it does when it isn't a stat (e.g. a taunt). */
+  effect?: string;
+}
+
+export const POSITION_RELICS: Record<string, PositionRule> = {
+  "Captain's Hat": { slot: 'top', mods: [{ stat: 'damage', value: 30 }] },
+  Caboose: { slot: 'end', mods: [{ stat: 'hpmax', value: 30 }] },
+  'Black Sheep': { slot: 'end', mods: [], effect: 'taunts up to 5 enemies when battle starts' },
+  "Lieutenant's Sigil": { slot: 3, mods: [{ stat: 'crit_chance', value: 10 }] },
+  'Assistant Coach': {
+    slot: 'below',
+    owner: 'coach',
+    mods: [
+      { stat: 'hpmax', value: 1 },
+      { stat: 'regeneration', value: 0.3 },
+    ],
+    perOwner: 'coach',
+    maxTimes: 20,
+    quadrupleFor: 'basic',
+  },
+};
+
+/** The Roster entry a position Relic lands on, or null if that slot is empty. */
+export function positionTarget(roster: Entry[], rule: PositionRule): Entry | null {
+  if (!roster.length) return null;
+  if (rule.slot === 'top') return roster[0];
+  if (rule.slot === 'end') return roster.at(-1)!;
+  if (rule.slot === 'below') {
+    const i = roster.findIndex((e) => e.dude === rule.owner);
+    return i >= 0 ? (roster[i + 1] ?? null) : null;
+  }
+  return roster[rule.slot - 1] ?? null;
+}
+
+const ORDINAL = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+
+/** "at the top of your Roster", "third on your Roster", "right below Coach Dude". */
+export function slotLabel(rule: PositionRule): string {
+  if (rule.slot === 'top') return 'at the top of your Roster';
+  if (rule.slot === 'end') return 'at the end of your Roster';
+  if (rule.slot === 'below') return `right below ${dudeById.get(rule.owner ?? '')?.name ?? 'its owner'}`;
+  return `${ORDINAL[rule.slot - 1] ?? `#${rule.slot}`} on your Roster`;
 }
 
 /** Relics that reach neighbours on the Roster. */
