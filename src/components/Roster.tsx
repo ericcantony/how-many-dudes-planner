@@ -120,7 +120,7 @@ export function Roster({ roster, plan, stats, plannedRelics, focus, analysis, on
           Roster
         </h2>
         <p className="muted">
-          Drag to reorder. Top of the list is the top of your Roster. Green stats include planned Relics and Trinkets;
+          Drag to reorder. Top of the list is the top of your Roster. Green stats include your Relics and Trinkets;
           hover or focus a stat for details.
         </p>
         <TypeCounter roster={roster} />
@@ -296,7 +296,7 @@ function StatTip({ stat, buffed }: Readonly<{ stat: ShownStat; buffed: boolean }
         </>
       ) : (
         <span className="tip-value">
-          <strong>{fmtStat(stat)}</strong> base, no bonuses from your plan
+          <strong>{fmtStat(stat)}</strong> base, no bonuses from your Relics, Trinkets or Roster
         </span>
       )}
     </>

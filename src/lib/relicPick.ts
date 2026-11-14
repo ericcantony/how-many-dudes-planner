@@ -219,7 +219,7 @@ export function gradeRelic(relicId: string, comp: Comp): RelicGrade {
   let hpGain = 0;
 
   if (comp.relics.includes(relicId)) {
-    reasons.push({ delta: 0, text: 'Already in your Planned Relics.' });
+    reasons.push({ delta: 0, text: 'Already in Your Relics.' });
   }
   const reach = reachReasons(r, comp);
   reasons.push(...reach.reasons);

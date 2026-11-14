@@ -1,17 +1,14 @@
-import { dudeById, familyById, relicById } from '../data/game';
+import { dudeById, familyById } from '../data/game';
 import { ROLE_LABELS, type Analysis as A, type Role } from '../lib/synergy';
-import { Desc, Sprite } from './bits';
+import { Sprite } from './bits';
 import { BuildAround } from './BuildAround';
 
 interface Props {
   analysis: A;
-  plannedRelics: string[];
   focus: string[];
   notes: string;
   onNotes: (s: string) => void;
-  onToggleRelic: (id: string) => void;
   onToggleFocus: (col: string) => void;
-  onOpenRelics: () => void;
   onFindRelics: (col: string) => void;
   onAddDude: (id: string) => void;
 }
@@ -20,18 +17,14 @@ const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 
 
 export function AnalysisPanel({
   analysis: a,
-  plannedRelics,
   focus,
   notes,
   onNotes,
-  onToggleRelic,
   onToggleFocus,
-  onOpenRelics,
   onFindRelics,
   onAddDude,
 }: Readonly<Props>) {
   const maxFam = Math.max(1, ...a.familyCounts.map((f) => f.dudes));
-  const unusable = plannedRelics.filter((id) => !a.relevantRelics.has(id));
 
   return (
     <aside className="panel analysis" aria-labelledby="analysis-title">
@@ -54,7 +47,7 @@ export function AnalysisPanel({
         </div>
       </dl>
       <p className="muted small">
-        Includes planned Relics, Trinkets and Roster bonuses we can work out. In-battle effects aren’t counted.
+        Includes your Relics, Trinkets and Roster bonuses we can work out. In-battle effects aren’t counted.
       </p>
 
       <BuildAround
@@ -98,57 +91,6 @@ export function AnalysisPanel({
           </li>
         ))}
       </ul>
-
-      {a.teamSynergies.length > 0 && (
-        <>
-          <h3>Team Relic payoffs</h3>
-          <ul className="team-syn">
-            {a.teamSynergies.map((s) => (
-              <li key={s.id} className={s.planned ? 'on' : ''}>
-                {s.icon && <Sprite id={s.icon} size={28} />}
-                <div>
-                  <strong>{s.title}</strong>
-                  <p>{s.detail}</p>
-                </div>
-                <button className="btn small" aria-pressed={s.planned} onClick={() => onToggleRelic(s.id)}>
-                  {s.planned ? 'Planned' : 'Plan'}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      <div className="section-head">
-        <h3>Planned Relics ({plannedRelics.length})</h3>
-        <button className="btn small" onClick={onOpenRelics}>
-          Add Relics
-        </button>
-      </div>
-      {plannedRelics.length === 0 ? (
-        <p className="muted small">No Relics planned yet. Add the ones you want to look for in the shop.</p>
-      ) : (
-        <ul className="planned">
-          {plannedRelics.map((id) => {
-            const r = relicById.get(id)!;
-            return (
-              <li key={id} className={unusable.includes(id) ? 'unusable' : ''}>
-                <Sprite id={r.icon} size={32} />
-                <div>
-                  <strong>{r.name}</strong>
-                  {unusable.includes(id) && <span className="warn-tag">No Dude on the Roster uses this</span>}
-                  <p>
-                    <Desc tokens={r.desc} />
-                  </p>
-                </div>
-                <button className="btn icon ghost danger" onClick={() => onToggleRelic(id)} aria-label={`Remove ${r.name}`}>
-                  ✕
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
 
       <h3>
         <label htmlFor="comp-notes">Notes</label>

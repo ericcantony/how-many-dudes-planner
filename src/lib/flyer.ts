@@ -126,7 +126,7 @@ function extraReasons(dude: string, ctx: FlyerContext, others: string[]): Reason
   // Relics you already plan for this Dude.
   const planned = ctx.relics.filter((r) => relicById.get(r)?.dudes?.includes(dude));
   if (planned.length) {
-    out.push({ delta: 1, text: `Uses ${planned.length} Relic${planned.length > 1 ? 's' : ''} you planned (${list(planned.map((r) => relicById.get(r)!.name))}).` });
+    out.push({ delta: 1, text: `Uses ${planned.length} of your Relic${planned.length > 1 ? 's' : ''} (${list(planned.map((r) => relicById.get(r)!.name))}).` });
   }
   // Roster position needs (information only).
   if (dude === 'alien') out.push({ delta: 0, text: 'Place another Dude Type above him: Tractor Beam needs one.' });

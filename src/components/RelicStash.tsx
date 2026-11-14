@@ -9,7 +9,7 @@ interface Props {
   comp: Comp;
   /** Relics this Roster can use (for the picker's default filter). */
   relevant: Set<string>;
-  /** Add the chosen Relic to Planned Relics. */
+  /** Add the chosen Relic to Your Relics. */
   onTake: (relicId: string) => void;
 }
 

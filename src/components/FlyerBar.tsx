@@ -17,7 +17,7 @@ interface StartProps {
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-/** Shown above the Roster when no run is tracked. */
+/** Shown below the Roster when no run is tracked. */
 export function RunStart({ typeCount, hasRoster, onStart }: Readonly<StartProps>) {
   const [confirming, setConfirming] = useState(false);
   const flyers = Math.max(0, MAX_TYPES - typeCount);
@@ -28,7 +28,7 @@ export function RunStart({ typeCount, hasRoster, onStart }: Readonly<StartProps>
         <div>
           <h2 className="panel-title">Start fresh?</h2>
           <p className="small">
-            This replaces your current Roster, planned Relics and focus stats with a single Regular Dude. Save this comp
+            This replaces your current Roster, Relics and focus stats with a single Regular Dude. Save this comp
             first if you want to keep it.
           </p>
         </div>

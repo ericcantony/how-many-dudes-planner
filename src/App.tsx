@@ -32,6 +32,7 @@ import { ChartView } from './components/ChartView';
 import { FlyerBar, RunStart } from './components/FlyerBar';
 import { RecruitHelper } from './components/RecruitHelper';
 import { RelicStash } from './components/RelicStash';
+import { RelicsPanel } from './components/RelicsPanel';
 import { ratioPlan } from './lib/ratio';
 import { teamStats } from './lib/stats';
 
@@ -229,13 +230,10 @@ export default function App() {
   const analysisPanel = (
     <AnalysisPanel
       analysis={shownAnalysis}
-      plannedRelics={comp.relics}
       focus={comp.focus}
       notes={comp.notes}
       onNotes={(notes) => patch({ notes })}
-      onToggleRelic={toggleRelic}
       onToggleFocus={toggleFocus}
-      onOpenRelics={() => setRelicStat('')}
       onFindRelics={setRelicStat}
       onAddDude={addDude}
     />
@@ -301,6 +299,18 @@ export default function App() {
             onAdd={addDude}
           />
           <div className="center-col">
+            {/* The Roster is what everyone uses, so it leads; run tracking, recruit plan and relic stash are optional helpers. */}
+            <Roster
+              roster={comp.roster}
+              plan={plan}
+              stats={stats}
+              plannedRelics={planned}
+              focus={comp.focus}
+              analysis={analysis}
+              onChange={(roster) => patch({ roster })}
+              onToggleRelic={toggleRelic}
+              onPickTrinket={setTrinketFor}
+            />
             {comp.run ? (
               <FlyerBar
                 flyers={comp.flyers}
@@ -344,20 +354,16 @@ export default function App() {
                 relevant={analysis.relevantRelics}
                 onTake={(id) => {
                   setComp((c) => (c.relics.includes(id) ? c : { ...c, relics: [...c.relics, id] }));
-                  flash(`Added ${relicById.get(id)?.name ?? 'Relic'} to Planned Relics`);
+                  flash(`Added ${relicById.get(id)?.name ?? 'Relic'} to your Relics`);
                 }}
               />
             )}
-            <Roster
-              roster={comp.roster}
-              plan={plan}
-              stats={stats}
-              plannedRelics={planned}
-              focus={comp.focus}
-              analysis={analysis}
-              onChange={(roster) => patch({ roster })}
-              onToggleRelic={toggleRelic}
-              onPickTrinket={setTrinketFor}
+            <RelicsPanel
+              relics={comp.relics}
+              unusable={new Set(comp.relics.filter((id) => !shownAnalysis.relevantRelics.has(id)))}
+              payoffs={shownAnalysis.teamSynergies}
+              onToggle={toggleRelic}
+              onOpenPicker={() => setRelicStat('')}
             />
           </div>
           {analysisPanel}
@@ -373,7 +379,7 @@ export default function App() {
       <ItemPicker
         key={`relics-${relicStat}`}
         open={relicStat !== null}
-        title="Plan Relics"
+        title="Your Relics"
         items={relics}
         selected={planned}
         relevant={analysis.relevantRelics}
