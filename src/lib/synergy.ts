@@ -143,125 +143,150 @@ function rolesOf(d: Dude): Role[] {
 const pct = (n: number) => `${Math.round(n * 10) / 10}%`;
 const fam = (id: string | null) => families.find((f) => f.id === id)?.name ?? 'No Family';
 
-export function analyse(comp: Comp): Analysis {
-  const roster = comp.roster;
-  const planned = new Set(comp.relics);
-  const notes = new Map<string, Note[]>();
-  const note = (e: Entry, n: Note) => notes.set(e.key, [...(notes.get(e.key) ?? []), n]);
-  const dudeOf = (e: Entry) => dudeById.get(e.dude)!;
-  const countOf = (id: string) => roster.filter((e) => e.dude === id).reduce((s, e) => s + e.count, 0);
-  const totalDudes = roster.reduce((s, e) => s + e.count, 0);
+type NoteFn = (e: Entry, n: Note) => void;
+const dudeOf = (e: Entry) => dudeById.get(e.dude)!;
 
-  // ----- Position links -----
+/** Roster offsets each direction reaches. */
+const DIR_OFFSETS: Record<Dir, number[]> = { above: [-1], below: [1], adjacent: [-1, 1] };
+
+/** Does the Roster slot i have the neighbour this direction needs? */
+function hasNeighbour(need: Dir, i: number, length: number) {
+  if (need === 'above') return i > 0;
+  if (need === 'below') return i < length - 1;
+  return length > 1;
+}
+
+/** Links from the Dude Type at slot i, for every positional rule he has (abilities, planned Relics). */
+function linksFrom(e: Entry, i: number, length: number, planned: Set<string>): Link[] {
+  const out: Link[] = [];
+  for (const rule of POSITIONAL) {
+    if (rule.dude !== e.dude || (rule.relic && !planned.has(rule.relic))) continue;
+    const kind = rule.relic ? 'relic' : 'ability';
+    for (const t of DIR_OFFSETS[rule.dir].map((o) => i + o)) {
+      if (t >= 0 && t < length) out.push({ from: i, to: t, label: rule.label, source: rule.source, kind });
+    }
+  }
+  return out;
+}
+
+function positionLinks(roster: Entry[], planned: Set<string>, note: NoteFn): Link[] {
   const links: Link[] = [];
   roster.forEach((e, i) => {
-    for (const rule of POSITIONAL) {
-      if (rule.dude !== e.dude || (rule.relic && !planned.has(rule.relic))) continue;
-      const targets = rule.dir === 'above' ? [i - 1] : rule.dir === 'below' ? [i + 1] : [i - 1, i + 1];
-      for (const t of targets) {
-        if (t >= 0 && t < roster.length) {
-          links.push({ from: i, to: t, label: rule.label, source: rule.source, kind: rule.relic ? 'relic' : 'ability' });
-        }
-      }
-    }
+    links.push(...linksFrom(e, i, roster.length, planned));
     const need = NEEDS_NEIGHBOUR[e.dude];
-    if (need) {
-      const has = need === 'above' ? i > 0 : need === 'below' ? i < roster.length - 1 : roster.length > 1;
-      if (!has) {
-        const where = need === 'adjacent' ? 'next to him' : need;
-        note(e, { tone: 'warn', text: `${dudeOf(e).ability.name} needs a Dude Type ${where}.` });
-      }
+    if (need && !hasNeighbour(need, i, roster.length)) {
+      const where = need === 'adjacent' ? 'next to him' : need;
+      note(e, { tone: 'warn', text: `${dudeOf(e).ability.name} needs a Dude Type ${where}.` });
     }
   });
+  return links;
+}
 
-  // Top / bottom relics
-  if (roster.length) {
-    const top = roster[0];
-    const end = roster[roster.length - 1];
-    if (planned.has(rid("Captain's Hat"))) note(top, { tone: 'good', text: "Captain's Hat: +30% Attack Power (top of Roster)." });
-    if (planned.has(rid('Caboose'))) note(end, { tone: 'good', text: 'Caboose: +30% Max HP (end of Roster).' });
-    if (planned.has(rid('Black Sheep'))) note(end, { tone: 'good', text: 'Black Sheep: Taunts up to 5 enemies at battle start.' });
-    if (planned.has(rid("Lieutenant's Sigil")) && roster[2]) {
-      note(roster[2], { tone: 'good', text: "Lieutenant's Sigil: +10% Crit Chance (third on Roster)." });
-    }
+/** Relics that buff one Roster slot: top, end, third. */
+function slotRelicNotes(roster: Entry[], planned: Set<string>, note: NoteFn) {
+  const top = roster.at(0);
+  const end = roster.at(-1);
+  if (!top || !end) return;
+  if (planned.has(rid("Captain's Hat"))) note(top, { tone: 'good', text: "Captain's Hat: +30% Attack Power (top of Roster)." });
+  if (planned.has(rid('Caboose'))) note(end, { tone: 'good', text: 'Caboose: +30% Max HP (end of Roster).' });
+  if (planned.has(rid('Black Sheep'))) note(end, { tone: 'good', text: 'Black Sheep: Taunts up to 5 enemies at battle start.' });
+  if (planned.has(rid("Lieutenant's Sigil")) && roster[2]) {
+    note(roster[2], { tone: 'good', text: "Lieutenant's Sigil: +10% Crit Chance (third on Roster)." });
   }
+}
 
-  // ----- Count-based abilities -----
+const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? 's' : ''}`;
+
+interface CountCtx {
+  /** Copies of this Dude Type on the Roster. */
+  n: number;
+  totalDudes: number;
+  planned: Set<string>;
+}
+
+function warmBenchNote(n: number): Note {
+  return n >= 12
+    ? { tone: 'good', text: `Warm Bench doubled (${n} Football Dudes).` }
+    : { tone: 'info', text: `Warm Bench doubles at 12 Football Dudes (${n} now).` };
+}
+
+/** Notes for abilities that scale with (or need) a number of Dudes. */
+const COUNT_NOTES: Record<string, (c: CountCtx) => Note[]> = {
+  basic: ({ n }) => [
+    n > 1
+      ? { tone: 'good', text: `Mob Mentality: +${pct(2 * (n - 1))} Attack Power and Max HP each (${n} Regular Dudes).` }
+      : { tone: 'info', text: 'Mob Mentality grows with every extra Regular Dude.' },
+  ],
+  cyborg: ({ n }) => [{ tone: n > 1 ? 'good' : 'info', text: `Extermination stacks are shared by all ${plural(n, 'Cyborg Dude')}.` }],
+  finance: ({ n }) => [{ tone: 'good', text: `Dividend: $${3 * n} after each battle.` }],
+  necromancer: ({ n }) => [{ tone: 'info', text: `Brings ${plural(n, 'Skeledude')} into battle.` }],
+  quantum: ({ n }) => [{ tone: 'info', text: `Brings up to ${plural(n, 'Echo Dude')} into battle.` }],
+  soccer: ({ n }) => (n < 2 ? [{ tone: 'warn', text: 'Total Football passes between Soccer Dudes. Add more than one.' }] : []),
+  manager: ({ n, totalDudes }) =>
+    totalDudes - n < 4 ? [{ tone: 'warn', text: `Micromanage picks 4 non-Manager Interns; you have ${totalDudes - n}.` }] : [],
+  football: ({ n, totalDudes, planned }) => {
+    const out: Note[] = [];
+    if (totalDudes - n < 2) out.push({ tone: 'warn', text: 'Blitz teams up with 2 non-Football Dudes; add more.' });
+    if (planned.has(rid('Warm Bench'))) out.push(warmBenchNote(n));
+    return out;
+  },
+};
+
+function countNotes(roster: Entry[], planned: Set<string>, totalDudes: number, note: NoteFn) {
+  const countOf = (id: string) => roster.filter((e) => e.dude === id).reduce((s, e) => s + e.count, 0);
   for (const e of roster) {
-    const n = countOf(e.dude);
-    switch (e.dude) {
-      case 'basic':
-        if (n > 1) note(e, { tone: 'good', text: `Mob Mentality: +${pct(2 * (n - 1))} Attack Power and Max HP each (${n} Regular Dudes).` });
-        else note(e, { tone: 'info', text: 'Mob Mentality grows with every extra Regular Dude.' });
-        break;
-      case 'cyborg':
-        note(e, { tone: n > 1 ? 'good' : 'info', text: `Extermination stacks are shared by all ${n} Cyborg Dude${n > 1 ? 's' : ''}.` });
-        break;
-      case 'finance':
-        note(e, { tone: 'good', text: `Dividend: $${3 * n} after each battle.` });
-        break;
-      case 'necromancer':
-        note(e, { tone: 'info', text: `Brings ${n} Skeledude${n > 1 ? 's' : ''} into battle.` });
-        break;
-      case 'quantum':
-        note(e, { tone: 'info', text: `Brings up to ${n} Echo Dude${n > 1 ? 's' : ''} into battle.` });
-        break;
-      case 'soccer':
-        if (n < 2) note(e, { tone: 'warn', text: 'Total Football passes between Soccer Dudes. Add more than one.' });
-        break;
-      case 'manager': {
-        const others = totalDudes - n;
-        if (others < 4) note(e, { tone: 'warn', text: `Micromanage picks 4 non-Manager Interns; you have ${others}.` });
-        break;
-      }
-      case 'football': {
-        if (totalDudes - n < 2) note(e, { tone: 'warn', text: 'Blitz teams up with 2 non-Football Dudes; add more.' });
-        if (planned.has(rid('Warm Bench'))) {
-          note(e, n >= 12
-            ? { tone: 'good', text: `Warm Bench doubled (${n} Football Dudes).` }
-            : { tone: 'info', text: `Warm Bench doubles at 12 Football Dudes (${n} now).` });
-        }
-        break;
-      }
-    }
+    const rule = COUNT_NOTES[e.dude];
+    if (rule) for (const n of rule({ n: countOf(e.dude), totalDudes, planned })) note(e, n);
   }
+}
 
-  // ----- Families -----
-  const familyCounts = families
+function familyCountsOf(roster: Entry[]) {
+  return families
     .map((f) => {
       const es = roster.filter((e) => dudeOf(e).family === f.id);
       return { id: f.id, dudes: es.reduce((s, e) => s + e.count, 0), types: new Set(es.map((e) => e.dude)).size };
     })
     .sort((a, b) => b.dudes - a.dudes);
-  const presentFamilies = familyCounts.filter((f) => f.dudes > 0);
+}
 
-  // ----- Team-wide relic synergies (shown whether planned or not, so you can see the payoff) -----
-  const teamSynergies: TeamSynergy[] = [];
+/** Team-wide relic payoffs, shown whether planned or not so you can see what they'd give. */
+function teamSynergiesOf(roster: Entry[], planned: Set<string>, presentFamilies: { id: string; dudes: number }[]): TeamSynergy[] {
+  if (!roster.length) return [];
+  const out: TeamSynergy[] = [];
   const syn = (name: string, detail: string) => {
     const r = relicById.get(rid(name));
-    teamSynergies.push({ id: rid(name), title: name, detail, planned: planned.has(rid(name)), icon: r?.icon });
+    out.push({ id: rid(name), title: name, detail, planned: planned.has(rid(name)), icon: r?.icon });
   };
-  if (roster.length) {
-    syn(
-      'Bonfire',
-      presentFamilies.map((f) => `${fam(f.id)} +${Math.min(20, f.dudes)}%`).join(', ') + ' Max HP',
-    );
-    const byType = new Map<string, number>();
-    for (const e of roster) byType.set(e.dude, (byType.get(e.dude) ?? 0) + e.count);
-    const [topType, topN] = [...byType].sort((a, b) => b[1] - a[1])[0];
-    syn('Championship Belt', `${dudeById.get(topType)!.name} (${topN}) gains +30% Attack Power`);
-    syn('Sensitivity Training', `All Dudes +${presentFamilies.length * 4}% Attack Power (${presentFamilies.length} Families)`);
-  }
+  syn('Bonfire', presentFamilies.map((f) => `${fam(f.id)} +${Math.min(20, f.dudes)}%`).join(', ') + ' Max HP');
+  const byType = new Map<string, number>();
+  for (const e of roster) byType.set(e.dude, (byType.get(e.dude) ?? 0) + e.count);
+  const [topType, topN] = [...byType].sort((a, b) => b[1] - a[1])[0];
+  syn('Championship Belt', `${dudeById.get(topType)!.name} (${topN}) gains +30% Attack Power`);
+  syn('Sensitivity Training', `All Dudes +${presentFamilies.length * 4}% Attack Power (${presentFamilies.length} Families)`);
+  return out;
+}
 
-  // ----- Roles -----
+export function analyse(comp: Comp): Analysis {
+  const roster = comp.roster;
+  const planned = new Set(comp.relics);
+  const notes = new Map<string, Note[]>();
+  const note: NoteFn = (e, n) => notes.set(e.key, [...(notes.get(e.key) ?? []), n]);
+  const totalDudes = roster.reduce((s, e) => s + e.count, 0);
+
+  const links = positionLinks(roster, planned, note);
+  slotRelicNotes(roster, planned, note);
+  countNotes(roster, planned, totalDudes, note);
+
+  const familyCounts = familyCountsOf(roster);
+  const presentFamilies = familyCounts.filter((f) => f.dudes > 0);
+  const teamSynergies = teamSynergiesOf(roster, planned, presentFamilies);
+
   const roles: Record<Role, string[]> = { taunt: [], heal: [], aoe: [], summon: [], money: [] };
   for (const e of roster) for (const r of rolesOf(dudeOf(e))) roles[r].push(e.dude);
 
-  // ----- Totals -----
   const totalHp = roster.reduce((s, e) => s + statNum(dudeOf(e), 'hpmax') * e.count, 0);
   const totalDps = roster.reduce((s, e) => s + statNum(dudeOf(e), 'dps') * e.count, 0);
 
-  // ----- Relevant relics -----
   const typeSet = new Set(roster.map((e) => e.dude));
   const famSet = new Set(presentFamilies.map((f) => f.id));
   const relevantRelics = new Set(relics.filter((r) => relicRelevant(r, typeSet, famSet)).map((r) => r.id));
