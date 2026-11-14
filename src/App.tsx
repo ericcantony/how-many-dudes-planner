@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AnalysisPanel } from './components/Analysis';
 import { DudePicker } from './components/DudePicker';
 import { ItemPicker } from './components/ItemPicker';
@@ -30,7 +30,6 @@ import { RELIC_GIVES } from './data/chart';
 import { CREDITS } from './credits';
 import { ChartView } from './components/ChartView';
 import { FlyerBar, RunStart } from './components/FlyerBar';
-import { RecruitHelper } from './components/RecruitHelper';
 import { RelicStash } from './components/RelicStash';
 import { RelicsPanel } from './components/RelicsPanel';
 import { ratioPlan } from './lib/ratio';
@@ -158,34 +157,6 @@ export default function App() {
 
   const endRun = () => setComp((c) => ({ ...c, run: false, flyers: [] }));
 
-  // ----- Counts: Regulars come from events and get trained into other types. -----
-
-  const addRegulars = (n: number) =>
-    setComp((c) => {
-      const has = c.roster.some((e) => e.dude === 'basic');
-      const roster = has
-        ? c.roster.map((e) => (e.dude === 'basic' ? { ...e, count: Math.min(999, e.count + n) } : e))
-        : [{ key: newKey(), dude: 'basic', count: n, trinket: null }, ...c.roster];
-      return { ...c, roster };
-    });
-
-  const trainRegulars = (dude: string, n: number) => {
-    const have = comp.roster.find((e) => e.dude === 'basic')?.count ?? 0;
-    const moved = Math.min(n, have);
-    if (!moved) return;
-    setComp((c) => ({
-      ...c,
-      roster: c.roster
-        .map((e) => {
-          if (e.dude === 'basic') return { ...e, count: e.count - moved };
-          if (e.dude === dude) return { ...e, count: Math.min(999, e.count + moved) };
-          return e;
-        })
-        .filter((e) => e.count > 0),
-    }));
-    flash(`Trained ${moved} Regular${moved === 1 ? '' : 's'} into ${dudeById.get(dude)?.name ?? dude}`);
-  };
-
   const toggleFocus = (col: string) =>
     setComp((c) => ({ ...c, focus: c.focus.includes(col) ? c.focus.filter((f) => f !== col) : [...c.focus, col] }));
 
@@ -226,6 +197,30 @@ export default function App() {
 
   const trinketEntry = comp.roster.find((e) => e.key === trinketFor);
 
+
+  // Run tracking: the flyer bar during a run, the start card otherwise. Once every flyer is used (5 Dude Types),
+  // there's nothing left to track, so neither shows.
+  let runPanel: ReactNode = null;
+  if (flyersLeft(comp.roster) > 0) {
+    runPanel = comp.run ? (
+      <FlyerBar
+        flyers={comp.flyers}
+        pool={[...new Set([...unlockedTypes(comp), ...comp.roster.map((e) => e.dude)])]}
+        rosterTypes={comp.roster.map((e) => e.dude)}
+        left={flyersLeft(comp.roster)}
+        stage={countedTypes(comp.roster)}
+        focus={comp.focus}
+        relics={comp.relics}
+        onOffer={setOffer}
+        onPick={pickFlyer}
+        onUndo={undoFlyer}
+        onEnd={endRun}
+        onFocus={(focus) => patch({ focus })}
+      />
+    ) : (
+      <RunStart typeCount={countedTypes(comp.roster)} hasRoster={comp.roster.length > 0} onStart={startRun} />
+    );
+  }
 
   const analysisPanel = (
     <AnalysisPanel
@@ -310,44 +305,19 @@ export default function App() {
               onChange={(roster) => patch({ roster })}
               onToggleRelic={toggleRelic}
               onPickTrinket={setTrinketFor}
+              targets={comp.targets}
+              onTarget={(dude, pct) =>
+                setComp((c) => {
+                  const targets = { ...c.targets };
+                  if (pct === null) delete targets[dude];
+                  else targets[dude] = pct;
+                  return { ...c, targets };
+                })
+              }
+              onResetTargets={() => patch({ targets: {} })}
+              onProjected={(n) => patch({ projected: clampProjected(n) })}
             />
-            {comp.run ? (
-              <FlyerBar
-                flyers={comp.flyers}
-                pool={[...new Set([...unlockedTypes(comp), ...comp.roster.map((e) => e.dude)])]}
-                rosterTypes={comp.roster.map((e) => e.dude)}
-                left={flyersLeft(comp.roster)}
-                stage={countedTypes(comp.roster)}
-                focus={comp.focus}
-                relics={comp.relics}
-                onOffer={setOffer}
-                onPick={pickFlyer}
-                onUndo={undoFlyer}
-                onEnd={endRun}
-                onFocus={(focus) => patch({ focus })}
-              />
-            ) : (
-              <RunStart typeCount={countedTypes(comp.roster)} hasRoster={comp.roster.length > 0} onStart={startRun} />
-            )}
-            {plan.types.length > 0 && (
-              <RecruitHelper
-                plan={plan}
-                onProjected={(n) => patch({ projected: clampProjected(n) })}
-                onRecruit={addDude}
-                onTrain={trainRegulars}
-                onAddRegulars={addRegulars}
-                targets={comp.targets}
-                onTarget={(dude, pct) =>
-                  setComp((c) => {
-                    const targets = { ...c.targets };
-                    if (pct === null) delete targets[dude];
-                    else targets[dude] = pct;
-                    return { ...c, targets };
-                  })
-                }
-                onResetTargets={() => patch({ targets: {} })}
-              />
-            )}
+            {runPanel}
             {comp.roster.length > 0 && (
               <RelicStash
                 comp={comp}

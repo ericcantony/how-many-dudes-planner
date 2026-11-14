@@ -476,5 +476,13 @@ for (const [key, cols] of Object.entries(rows)) {
     out.rows[key][col] = cell;
   }
 }
+// Which Relics let a Dude heal teammates (timed or not), so the app can tell "heals now" from "heals with Relic X".
+const abilityName = new Map(game.dudes.map((d) => [d.id, d.ability?.name]));
+out.healRelics = {};
+for (const h of HEAL_SOURCES) {
+  if (h.basis === 'mult' || h.to === 'self' || h.owner.includes(':') || h.source === abilityName.get(h.owner)) continue;
+  const list = (out.healRelics[h.owner] ??= []);
+  if (!list.includes(h.source)) list.push(h.source);
+}
 writeFileSync(new URL('../src/data/grades.json', import.meta.url), JSON.stringify(out, null, 1) + '\n');
 console.log(`grades.json: ${Object.keys(out.rows).length} rows`);

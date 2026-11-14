@@ -1,6 +1,7 @@
-import { cellOf, columnById, givesToTeam, RELIC_GIVES, scales } from '../data/chart';
+import { cellOf, columnById, RELIC_GIVES, scales } from '../data/chart';
 import { dudeById, familyById, relicById, tokensText, type Relic } from '../data/game';
 import type { Comp } from './comp';
+import { healsTeam } from './synergy';
 import type { Grade, Reason } from './flyer';
 import { isConditional, POSITION_RELICS, positionTarget, slotLabel, teamStats, TIMED_RULES, timedTargetIssue } from './stats';
 
@@ -159,7 +160,7 @@ function fitReasons(r: Relic, comp: Comp, conditional: boolean): Reason[] {
   }
   // Only healing that reaches other Dudes fills the team's healer gap (not a Dude healing himself).
   const team = [...new Set(comp.roster.map((e) => e.dude))];
-  const healers = team.filter((d) => givesToTeam(cellOf(d, 'heal')));
+  const healers = team.filter((d) => healsTeam(d, comp.relics));
   if (gives.includes('heal') && !selfOnly && !healers.length && team.length) {
     out.push({ delta: 1.5 * weight, text: `Adds healing, and nobody on your team heals others yet${when}.` });
   }

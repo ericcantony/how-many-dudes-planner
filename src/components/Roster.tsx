@@ -17,7 +17,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { dudeById, relicById, trinketById, wikiUrl } from '../data/game';
-import { countedTypes, MAX_TYPES, type Entry } from '../lib/comp';
+import { clampTarget, countedTypes, MAX_TYPES, type Entry } from '../lib/comp';
 import type { RatioPlan, TypeTarget } from '../lib/ratio';
 import type { Analysis, Link } from '../lib/synergy';
 import { cellOf, gradeOf } from '../data/chart';
@@ -34,6 +34,12 @@ interface Props {
   onChange: (roster: Entry[]) => void;
   onToggleRelic: (id: string) => void;
   onPickTrinket: (entryKey: string) => void;
+  /** Targets set by hand, in percent (Dude id → %). */
+  targets: Record<string, number>;
+  /** Set a type's target (null = back to automatic). */
+  onTarget: (dude: string, pct: number | null) => void;
+  onResetTargets: () => void;
+  onProjected: (n: number) => void;
 }
 
 const wide = { gutter: 60, lane: 14 };
@@ -51,7 +57,21 @@ function useGutter() {
   return isNarrow ? narrow : wide;
 }
 
-export function Roster({ roster, plan, stats, plannedRelics, focus, analysis, onChange, onToggleRelic, onPickTrinket }: Readonly<Props>) {
+export function Roster({
+  roster,
+  plan,
+  stats,
+  plannedRelics,
+  focus,
+  analysis,
+  onChange,
+  onToggleRelic,
+  onPickTrinket,
+  targets,
+  onTarget,
+  onResetTargets,
+  onProjected,
+}: Readonly<Props>) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -125,6 +145,7 @@ export function Roster({ roster, plan, stats, plannedRelics, focus, analysis, on
         </p>
         <TypeCounter roster={roster} />
       </div>
+      {plan.types.length > 0 && <TargetBar plan={plan} targets={targets} onProjected={onProjected} onReset={onResetTargets} />}
       <div className="roster-body" style={{ paddingLeft: gutter.gutter }}>
         {!dragging && <Wires links={analysis.links} rows={rows} gutter={gutter.gutter} laneW={gutter.lane} />}
         <DndContext
@@ -150,6 +171,8 @@ export function Roster({ roster, plan, stats, plannedRelics, focus, analysis, on
                   target={plan.types.find((t) => t.dude === e.dude) ?? null}
                   projected={plan.projected}
                   recruited={plan.total}
+                  customPct={targets[e.dude]}
+                  onTarget={(pct) => onTarget(e.dude, pct)}
                   stats={stats.get(e.key) ?? null}
                   plannedRelics={plannedRelics}
                   onToggle={() =>
@@ -178,13 +201,69 @@ export function Roster({ roster, plan, stats, plannedRelics, focus, analysis, on
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
-/** "Target 35% (35 of 100), now 9 (30%)" with a bar: current share against target share. */
+const plural = (n: number, word: string) => (n === 1 ? `1 ${word}` : `${n} ${word}s`);
+
+/** Above the rows: how many Dudes you expect by the end, how the targets add up, and any warnings. */
+function TargetBar({
+  plan,
+  targets,
+  onProjected,
+  onReset,
+}: Readonly<{ plan: RatioPlan; targets: Record<string, number>; onProjected: (n: number) => void; onReset: () => void }>) {
+  const mine = plan.types.filter((t) => t.custom);
+  const mineSum = mine.reduce((s, t) => s + (targets[t.dude] ?? 0), 0);
+  const autoCount = plan.types.length - mine.length;
+  let summary = 'Targets are automatic; type a % on a row to set your own.';
+  if (mine.length && autoCount) {
+    summary = `You set ${mineSum}%; the other ${plural(autoCount, 'type')} share the remaining ${Math.max(0, 100 - mineSum)}%.`;
+  } else if (mine.length) summary = `You set every target (${mineSum}% in total).`;
+  return (
+    <div className="target-bar">
+      <label className="rh-projected">
+        <span>Expecting</span>
+        <input
+          className="input count"
+          type="number"
+          min={5}
+          max={999}
+          value={plan.projected}
+          onChange={(e) => onProjected(Number(e.target.value) || plan.projected)}
+        />
+        <span>Dudes by the end, not counting Regulars.</span>
+      </label>
+      <span className="muted small">{summary}</span>
+      {mine.length > 0 && (
+        <button className="btn small ghost" onClick={onReset}>
+          Reset all to automatic
+        </button>
+      )}
+      {plan.warnings.length > 0 && (
+        <ul className="rh-warnings">
+          {plan.warnings.map((w) => (
+            <li key={w}>{w}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** "On target: 4 of 17 recruited (24%). Aim for [16]% auto, about 16 of 100 by the end". */
 function RatioLine({
   dude,
   target,
   projected,
   recruited,
-}: Readonly<{ dude: string; target: TypeTarget | null; projected: number; recruited: number }>) {
+  customPct,
+  onTarget,
+}: Readonly<{
+  dude: string;
+  target: TypeTarget | null;
+  projected: number;
+  recruited: number;
+  customPct: number | undefined;
+  onTarget: (pct: number | null) => void;
+}>) {
   if (dude === 'basic') return <p className="ratio-line muted">Regulars: not part of the ratio, waiting to be trained</p>;
   if (!target) return null;
   // Within 3 points of the goal counts as on target.
@@ -199,30 +278,48 @@ function RatioLine({
     tone = 'above';
   }
   const minNote = target.min === null ? '' : ` (needs at least ${target.min})`;
+  const name = dudeById.get(dude)?.name ?? dude;
   return (
-    <Tip
-      as="p"
-      className={`ratio-line ${tone}`}
-      content={
-        <>
-          <span className="tip-title">Why {target.sharePct}%</span>
-          <span className="tip-list">
-            {target.reasons.map((r) => (
-              <span key={r}>{r}</span>
-            ))}
-          </span>
-        </>
-      }
-    >
+    <div className={`ratio-line ${tone}`}>
+      <Tip
+        content={
+          <>
+            <span className="tip-title">Why {target.sharePct}%</span>
+            <span className="tip-list">
+              {target.reasons.map((r) => (
+                <span key={r}>{r}</span>
+              ))}
+            </span>
+            {target.custom && <span className="tip-note">You set this target; automatic would be {target.autoPct}%.</span>}
+          </>
+        }
+      >
+        <strong>{status}</strong>: {target.count} of {recruited} recruited ({pct(target.current)}).
+      </Tip>
+      <label className="ratio-aim">
+        <span>Aim for</span>
+        <input
+          className="input count"
+          type="number"
+          min={0}
+          max={100}
+          value={target.custom ? customPct : target.sharePct}
+          onChange={(e) => onTarget(clampTarget(Number(e.target.value) || 0))}
+          aria-label={`${name} target percent`}
+        />
+        <span>%</span>
+      </label>
+      {target.custom ? (
+        <button className="btn small ghost" onClick={() => onTarget(null)}>
+          Auto ({target.autoPct}%)
+        </button>
+      ) : (
+        <span className="rh-auto">auto</span>
+      )}
       <span>
-        <strong>{status}</strong>: {target.count} of {recruited} recruited ({pct(target.current)}). Aim for {target.sharePct}%,
         about {target.target} of {projected} by the end{minNote}.
       </span>
-      <span className="ratio-bar" aria-hidden="true">
-        <span className="ratio-now" style={{ width: `${Math.min(100, target.current * 100)}%` }} />
-        <span className="ratio-target" style={{ left: `${Math.min(100, target.share * 100)}%` }} />
-      </span>
-    </Tip>
+    </div>
   );
 }
 
@@ -348,7 +445,8 @@ function Wires({
   laneW: number;
 }>) {
   if (!rows.length || !links.length) return null;
-  const height = rows[rows.length - 1].top + rows[rows.length - 1].height;
+  const last = rows.at(-1)!;
+  const height = last.top + last.height;
   // Assign lanes so overlapping wires sit side by side.
   const lanes: { lo: number; hi: number }[][] = [];
   const placed = links.map((l) => {
@@ -370,14 +468,14 @@ function Wires({
           </marker>
         ))}
       </defs>
-      {placed.map(({ l, lane }, i) => {
+      {placed.map(({ l, lane }) => {
         const x = GUTTER - (GUTTER > 40 ? 20 : 12) - lane * laneW;
         const down = l.to > l.from;
         const stagger = 5 + lane * 7;
         const y1 = yOf(l.from, down ? stagger : -stagger);
         const y2 = yOf(l.to, down ? -stagger : stagger);
         return (
-          <g key={i} className={`wire ${l.kind}`}>
+          <g key={`${l.from}-${l.to}-${l.source}-${l.label}`} className={`wire ${l.kind}`}>
             <title>{`${l.source}: ${l.label}`}</title>
             <circle cx={GUTTER - 2} cy={y1} r={3.5} />
             <path
@@ -406,6 +504,9 @@ interface RowProps {
   projected: number;
   /** Non-Regular Dudes recruited so far. */
   recruited: number;
+  /** This type's hand-set target %, if any. */
+  customPct: number | undefined;
+  onTarget: (pct: number | null) => void;
   /** Stats with calculated buffs, as the game panel shows them. */
   stats: EntryStats | null;
   onToggle: () => void;
@@ -448,8 +549,8 @@ function Row(p: Readonly<RowProps>) {
         </button>
         <Sprite id={dude.icon} size={48} />
         <div className="row-id">
-          <h3>{dude.name}</h3>
-          <div className="row-tags">
+          <div className="row-title">
+            <h3>{dude.name}</h3>
             <FamilyTag id={dude.family} count={p.stats?.familyCount ?? undefined} />
             {p.focus.map((col) => {
               const cell = cellOf(dude.id, col);
@@ -457,7 +558,14 @@ function Row(p: Readonly<RowProps>) {
             })}
           </div>
           {p.stats && <StatStrip stats={p.stats.stats} />}
-          <RatioLine dude={dude.id} target={p.target} projected={p.projected} recruited={p.recruited} />
+          <RatioLine
+            dude={dude.id}
+            target={p.target}
+            projected={p.projected}
+            recruited={p.recruited}
+            customPct={p.customPct}
+            onTarget={p.onTarget}
+          />
         </div>
 
         <fieldset className="stepper" aria-label={`Number of ${dude.name}s`}>
@@ -505,18 +613,18 @@ function Row(p: Readonly<RowProps>) {
 
       {(outgoing.length > 0 || incoming.length > 0 || p.notes.length > 0 || plannedOwn.length > 0) && (
         <ul className="row-notes">
-          {outgoing.map((l, i) => (
-            <li key={`o${i}`} className={`link-note ${l.kind}`}>
+          {outgoing.map((l) => (
+            <li key={`o${l.to}-${l.source}-${l.label}`} className={`link-note ${l.kind}`}>
               {l.to < index ? '↑' : '↓'} {l.source}: {l.label} <b>{nameAt(l.to)}</b>
             </li>
           ))}
-          {incoming.map((l, i) => (
-            <li key={`i${i}`} className={`link-note in ${l.kind}`}>
+          {incoming.map((l) => (
+            <li key={`i${l.from}-${l.source}-${l.label}`} className={`link-note in ${l.kind}`}>
               {l.from < index ? '↑' : '↓'} Gets {l.source} from <b>{nameAt(l.from)}</b>
             </li>
           ))}
-          {p.notes.map((n, i) => (
-            <li key={`n${i}`} className={`note ${n.tone}`}>
+          {p.notes.map((n) => (
+            <li key={`n${n.text}`} className={`note ${n.tone}`}>
               {n.text}
             </li>
           ))}

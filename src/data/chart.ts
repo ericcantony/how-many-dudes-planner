@@ -164,6 +164,8 @@ interface GradeCell {
 interface GradeFile {
   best: Record<'self' | 'team', Record<string, { v: number; key: string }>>;
   rows: Record<string, Record<string, GradeCell>>;
+  /** Dude id → his Relics that heal teammates (timed or not). */
+  healRelics: Record<string, string[]>;
 }
 const GRADES = gradesJson as GradeFile;
 
@@ -254,6 +256,9 @@ export function healStrength(dudeId: string) {
   const top = GRADES.best.team.heal?.v;
   return v && top ? v / top : 0.15;
 }
+
+/** A Dude's Relics that let him heal teammates, e.g. General → ["Frilled Shoulderpads"]. */
+export const healRelics = (dudeId: string): string[] => GRADES.healRelics[dudeId] ?? [];
 
 const GRADE_WEIGHT: Record<ChartGrade, number> = { S: 1.5, A: 1.35, B: 1.2, C: 1, D: 0.85, E: 0.7, F: 0.55 };
 /** A coloured cell whose amount the text doesn't show (procs like Rum Cask, HP-based effects): rated weak, about E. */

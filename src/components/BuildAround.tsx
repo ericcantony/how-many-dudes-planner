@@ -203,6 +203,11 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
             <DudeIcons ids={a.healer.suggestions} col="heal" onAdd={onAddDude} />
           </>
         )}
+        {a.healer.couldHeal.map((c) => (
+          <p key={c.dude} className="muted small">
+            {dudeById.get(c.dude)!.name} would heal the team with {c.relics.join(' or ')}, which isn’t in Your Relics.
+          </p>
+        ))}
       </div>
 
       <details className="legend-box">

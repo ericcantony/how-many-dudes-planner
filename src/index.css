@@ -1221,6 +1221,18 @@ button {
 
 
 
+/* Name and tags (Family, focus-stat chips) on one line. */
+.row-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.row-title h3 {
+  min-width: 0;
+}
+
 .row-tags {
   display: flex;
   flex-wrap: wrap;
@@ -2274,6 +2286,43 @@ fieldset.stepper {
   margin: 4px 0 0;
 }
 
+.target-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-s);
+  background: var(--paper);
+}
+
+.target-bar .rh-warnings {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.ratio-aim {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ratio-aim .input.count {
+  width: 52px;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.ratio-line .rh-auto {
+  min-width: 0;
+}
+
+.ratio-line .btn.small {
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
 .ratio-line {
   display: flex;
   align-items: center;
@@ -2296,28 +2345,8 @@ fieldset.stepper {
   color: var(--ink);
 }
 
-.ratio-bar {
-  position: relative;
-  width: 90px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--paper);
-}
 
-.ratio-now {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: 999px;
-  background: var(--marker);
-}
 
-.ratio-target {
-  position: absolute;
-  top: -3px;
-  width: 2px;
-  height: 12px;
-  background: var(--ink);
-}
 
 /* ---------- Stat strip (game-panel style) ---------- */
 

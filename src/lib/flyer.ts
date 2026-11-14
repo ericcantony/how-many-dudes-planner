@@ -1,4 +1,5 @@
-import { cellOf, COLUMNS, columnById, dudeCells, givesToTeam, scales, selfScaling } from '../data/chart';
+import { cellOf, COLUMNS, columnById, dudeCells, givesToTeam, healRelics, scales, selfScaling } from '../data/chart';
+import { healsTeam } from './synergy';
 import { dudeById, familyById, relicById } from '../data/game';
 
 /** How good a flyer option is for the current run. */
@@ -86,13 +87,15 @@ function feedReasons(dude: string, ctx: FlyerContext, others: string[]): Reason[
 /** Healers and taunters: fill a missing role (+), don't double up on healers (−). */
 function roleReasons(dude: string, ctx: FlyerContext, others: string[]): Reason[] {
   const out: Reason[] = [];
-  if (givesToTeam(cellOf(dude, 'heal'))) {
-    const healers = others.filter((o) => givesToTeam(cellOf(o, 'heal')));
+  const healers = others.filter((o) => healsTeam(o, ctx.relics));
+  if (healsTeam(dude, ctx.relics)) {
     if (healers.length) {
       out.push({ delta: -1.5, text: `You already have a healer (${list(healers.map(name))}).` });
     } else {
       out.push({ delta: ctx.flyerIndex === 0 ? 1 : 2, text: 'First healer: nobody unlocked heals other Dudes yet.' });
     }
+  } else if (healRelics(dude).length && !healers.length) {
+    out.push({ delta: 0.5, text: `Could heal the team, but only with ${list(healRelics(dude))}.` });
   }
   const taunts = (d: string) => {
     const c = cellOf(d, 'taunt');

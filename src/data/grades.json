@@ -3287,5 +3287,33 @@
     }
    }
   }
+ },
+ "healRelics": {
+  "mummy": [
+   "Anubis Statue"
+  ],
+  "vampire": [
+   "Blood Bag",
+   "Soul Reliquary"
+  ],
+  "necromancer": [
+   "Calcium Pills"
+  ],
+  "general": [
+   "Frilled Shoulderpads"
+  ],
+  "dentist": [
+   "Mouthwash",
+   "Retainer"
+  ],
+  "frankendude": [
+   "Organ Donor List"
+  ],
+  "manager": [
+   "Pizza Party"
+  ],
+  "coach": [
+   "Whiteboard"
+  ]
  }
 }

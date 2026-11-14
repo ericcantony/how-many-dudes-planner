@@ -9,6 +9,7 @@ import {
   gradeInfo,
   gradeOf,
   gradeWeight,
+  healRelics,
   healStrength,
   RELIC_GIVES,
   scales,
@@ -71,8 +72,10 @@ export interface FocusLine {
 }
 
 export interface HealerCheck {
-  /** Roster Dudes that heal other Dude Types (Heal G/Y). */
+  /** Roster Dudes that heal other Dude Types now: by ability, or with one of their healing Relics in Your Relics. */
   healers: string[];
+  /** Roster Dudes that would heal the team with one of their Relics you don't have yet. */
+  couldHeal: { dude: string; relics: string[] }[];
   /** Healers to add if there are none. */
   suggestions: string[];
 }
@@ -281,8 +284,11 @@ export function analyse(comp: Comp): Analysis {
   const presentFamilies = familyCounts.filter((f) => f.dudes > 0);
   const teamSynergies = teamSynergiesOf(roster, planned, presentFamilies);
 
+  const types = roster.map((e) => e.dude);
+  const healer = healerCheck(types, comp.focus, comp.relics);
   const roles: Record<Role, string[]> = { taunt: [], heal: [], aoe: [], summon: [], money: [] };
-  for (const e of roster) for (const r of rolesOf(dudeOf(e))) roles[r].push(e.dude);
+  for (const e of roster) for (const r of rolesOf(dudeOf(e))) if (r !== 'heal') roles[r].push(e.dude);
+  roles.heal = types.filter((d) => healer.healers.includes(d));
 
   const totalHp = roster.reduce((s, e) => s + statNum(dudeOf(e), 'hpmax') * e.count, 0);
   const totalDps = roster.reduce((s, e) => s + statNum(dudeOf(e), 'dps') * e.count, 0);
@@ -291,9 +297,7 @@ export function analyse(comp: Comp): Analysis {
   const famSet = new Set(presentFamilies.map((f) => f.id));
   const relevantRelics = new Set(relics.filter((r) => relicRelevant(r, typeSet, famSet)).map((r) => r.id));
 
-  const types = roster.map((e) => e.dude);
   const focusLines = focusLineup(types, comp.focus, comp.relics);
-  const healer = healerCheck(types, comp.focus);
   const fill = fillTeam(types, comp.focus, healer.healers.length > 0);
   const openSlots = Math.max(0, MAX_TYPES - new Set(types.filter((d) => d !== 'basic')).size);
 
@@ -329,15 +333,31 @@ const giveFit = (dude: string, focus: string[]) =>
 /** Healing weight: up to 4 for the best healer by estimated HP/s (colour doesn't matter for healing). */
 const HEAL_SCORE = 4;
 
+/** His ability heals other Dudes: the chart marks him a team healer and his ability text heals. */
+function abilityHealsTeam(dude: string) {
+  const d = dudeById.get(dude);
+  return !!d && givesToTeam(cellOf(dude, 'heal')) && rolesOf(d).includes('heal');
+}
+
+/** Heals teammates now: by his ability, or with one of his healing Relics among the comp's Relics. */
+export function healsTeam(dude: string, relicIds: string[]) {
+  if (abilityHealsTeam(dude)) return true;
+  const owned = new Set(relicIds.map((id) => relicById.get(id)?.name));
+  return healRelics(dude).some((n) => owned.has(n));
+}
+
 /** Step 3 of the method: make sure someone heals the other Dude Types. Ranked by estimated HP/s, plus focus-stat giving. */
-export function healerCheck(types: string[], focus: string[] = []): HealerCheck {
+export function healerCheck(types: string[], focus: string[] = [], relicIds: string[] = []): HealerCheck {
   const unique = [...new Set(types)];
-  const healers = unique.filter((d) => givesToTeam(cellOf(d, 'heal')));
+  const healers = unique.filter((d) => healsTeam(d, relicIds));
+  const couldHeal = unique
+    .filter((d) => !healers.includes(d) && healRelics(d).length > 0)
+    .map((d) => ({ dude: d, relics: healRelics(d) }));
   const strength = (d: string) => HEAL_SCORE * healStrength(d) + giveFit(d, focus);
   const suggestions = healers.length
     ? []
     : CHART_DUDES.filter((d) => givesToTeam(cellOf(d, 'heal'))).sort((a, b) => strength(b) - strength(a));
-  return { healers, suggestions };
+  return { healers, couldHeal, suggestions };
 }
 
 /** "Atk Pow (Y, S)": the column with the cell's colour (yellow only) and grade. */
@@ -374,7 +394,8 @@ function pickFor(dude: string, focus: string[], st: FillState): TeamPick {
   if (!st.hasHealer && givesToTeam(cellOf(dude, 'heal'))) {
     score += HEAL_SCORE * healStrength(dude);
     const hps = gradeInfo(dude, 'heal');
-    reasons.push(hps ? `Heals the team (${hps.grade}, ~${Math.round(hps.value)} HP/s)` : 'Heals the team');
+    const how = abilityHealsTeam(dude) ? '' : ` with ${healRelics(dude).join(' or ')}`;
+    reasons.push(hps ? `Heals the team${how} (${hps.grade}, ~${Math.round(hps.value)} HP/s)` : `Heals the team${how}`);
   }
   if (scalesWith.length) reasons.push(`Scales with ${scalesWith.join(', ')}`);
   return { dude, score, reasons };
