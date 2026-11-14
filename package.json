@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "scrape": "node scripts/scrape.mjs"
+    "scrape": "node scripts/scrape.mjs",
+    "grades": "node scripts/grades.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

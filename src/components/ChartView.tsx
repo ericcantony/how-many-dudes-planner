@@ -2,12 +2,11 @@ import { Fragment, useMemo, useState } from 'react';
 import {
   CELL_LABELS,
   CHART_DUDES,
-  COLUMN_BEST,
   COLUMNS,
   GRADE_LABELS,
   GROUP_ROWS,
   cellOf,
-  familyOnly,
+  gradeInfo,
   gradeOf,
   selfScaling,
   scales,
@@ -24,20 +23,21 @@ interface Props {
   onAddDude: (id: string) => void;
 }
 
-/** Tooltip text for one cell: colour meaning, strength grade and the column's best total. */
+/** Tooltip text for one cell: colour meaning, strength grade, estimate and the Relics behind it. */
 function cellTitle(name: string, c: Column, rowKey: string) {
   const cell = cellOf(rowKey, c.id);
-  const grade = gradeOf(rowKey, c.id);
-  const fromFamily = familyOnly(rowKey, c.id);
-  if (!cell && !grade) return undefined;
-  const parts = [`${name}, ${c.label}`];
-  if (cell) parts.push(CELL_LABELS[cell]);
-  else if (fromFamily) parts.push('Only through his Family Relics');
-  if (grade) parts.push(`Grade ${grade}: ${GRADE_LABELS[grade]} (best: ${COLUMN_BEST[c.id]})`);
+  if (!cell) return undefined;
+  const parts = [`${name}, ${c.label}: ${CELL_LABELS[cell]}`];
+  const g = gradeInfo(rowKey, c.id);
+  if (g) {
+    const who = g.kind === 'team' ? 'to teammates' : 'to himself';
+    parts.push(`Grade ${g.grade}: about ${g.value}${g.unit} ${who}, ${GRADE_LABELS[g.grade]} (best: ${g.best ?? 'n/a'})`);
+    parts.push(`From: ${g.sources.join('; ')}`);
+  }
   return parts.join('. ');
 }
 
-/** One chart cell: colour, plus the strength grade letter (grey italic when it comes only from Family Relics). */
+/** One chart cell: colour, plus the strength grade letter. */
 function GradeCell({ rowKey, name, col, focused }: Readonly<{ rowKey: string; name: string; col: Column; focused: boolean }>) {
   const cell = cellOf(rowKey, col.id);
   const grade = gradeOf(rowKey, col.id);
@@ -47,7 +47,7 @@ function GradeCell({ rowKey, name, col, focused }: Readonly<{ rowKey: string; na
   const title = cellTitle(name, col, rowKey);
   return (
     <td className={classes.join(' ') || undefined} title={title}>
-      {grade && <span className={familyOnly(rowKey, col.id) ? 'grade fam-only' : 'grade'}>{grade}</span>}
+      {grade && <span className="grade">{grade}</span>}
       {title && <span className="sr-only">{title}</span>}
     </td>
   );
@@ -182,9 +182,10 @@ export function ChartView({ focus, counts, onToggleFocus, onAddDude }: Readonly<
         </table>
       </div>
       <p className="muted small">
-        Chart and grades from a community post and spreadsheet on r/HowManyDudes (credited below; Dudex read 2026-11-06). Letters
-        grade the stacked total (all his Relics, his Family’s and his ability, at 30 Dudes) against the best in the column: S
-        best, then A to F. A grey letter on a white cell comes only from Family Relics. Summoned Dudes aren’t in it.
+        Colours from a community post on r/HowManyDudes (credited below), checked against the Dudex. Letters are our
+        own estimates from the Dudex Relic and ability text: on a yellow or green cell, how much he gives teammates; on a
+        blue cell, how much he gives himself; S is the best Dude, then A to F. Hover a cell to see the Relics behind it.
+        Healing is graded in HP per second; Temp HP and Revive aren’t graded. Summoned Dudes aren’t in it.
       </p>
     </section>
   );

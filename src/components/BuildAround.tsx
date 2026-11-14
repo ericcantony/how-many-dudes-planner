@@ -1,12 +1,7 @@
-import { CHART_DUDES, cellOf, columnById, FOCUS_COLUMNS, givesToTeam, gradeOf, type ColGroup } from '../data/chart';
+import { cellOf, columnById, FOCUS_COLUMNS, givesToTeam, type ColGroup } from '../data/chart';
 import { dudeById, familyById, relicById } from '../data/game';
-import type { Analysis, FocusLine } from '../lib/synergy';
-import { CellLegend, ColChip, Sprite, StatIcon } from './bits';
-
-/** Team healers graded S or A for Healing (HP/s per Dude) in the chart spreadsheet. */
-const TOP_HEALERS = CHART_DUDES.filter((d) => givesToTeam(cellOf(d, 'heal')) && ['S', 'A'].includes(gradeOf(d, 'heal') ?? ''))
-  .map((d) => `${dudeById.get(d)!.name} (${gradeOf(d, 'heal')})`)
-  .join(', ');
+import type { Analysis, FocusLine, TeamPick } from '../lib/synergy';
+import { CellDetail, CellLegend, ColChip, Sprite, StatIcon, Tip } from './bits';
 
 interface Props {
   analysis: Analysis;
@@ -24,21 +19,42 @@ const GROUPS: { id: ColGroup; label: string }[] = [
 
 const MAX_SUGGESTIONS = 6;
 
+/** Tooltip for a suggested Dude: who he is, why (the chart cells behind the pick), and what a click does. */
+function DudeTip({ dude, cols, add }: Readonly<{ dude: string; cols: string[]; add: boolean }>) {
+  const d = dudeById.get(dude)!;
+  return (
+    <>
+      <span className="tip-title">
+        <Sprite id={d.icon} size={20} />
+        {d.name}
+      </span>
+      {cols.map((col) => (
+        <CellDetail key={col} dude={dude} col={col} />
+      ))}
+      {add && <span className="tip-note">Click to add him to your Roster.</span>}
+    </>
+  );
+}
+
 function DudeIcons({ ids, col, onAdd }: Readonly<{ ids: string[]; col?: string; onAdd?: (id: string) => void }>) {
   return (
     <span className="lineup-suggest">
       {ids.slice(0, MAX_SUGGESTIONS).map((d) => {
         const dude = dudeById.get(d)!;
         const cell = col ? cellOf(d, col) : undefined;
+        const ring = cell ? ` ring-${cell}` : '';
         const icon = <Sprite id={dude.icon} size={22} alt={onAdd ? `Add ${dude.name}` : dude.name} />;
+        const tip = <DudeTip dude={d} cols={col ? [col] : []} add={!!onAdd} />;
         return onAdd ? (
-          <button key={d} className={`mini-dude${cell ? ` ring-${cell}` : ''}`} onClick={() => onAdd(d)} title={`Add ${dude.name}`}>
-            {icon}
-          </button>
+          <Tip key={d} content={tip} focusable={false}>
+            <button className={`mini-dude${ring}`} onClick={() => onAdd(d)}>
+              {icon}
+            </button>
+          </Tip>
         ) : (
-          <span key={d} className={`mini-dude static${cell ? ` ring-${cell}` : ''}`} title={dude.name}>
+          <Tip key={d} content={tip} className={`mini-dude static${ring}`}>
             {icon}
-          </span>
+          </Tip>
         );
       })}
     </span>
@@ -75,7 +91,15 @@ function Line({ l, onAddDude, onFindRelics }: Readonly<{ l: FocusLine; onAddDude
         </div>
       )}
       {hasGivers ? (
-        <p className="lineup-givers">Given by {givenBy.join(', ')}</p>
+        <>
+          <p className="lineup-givers">Given by {givenBy.join(', ')}</p>
+          {l.suggestions.length > 0 && (
+            <div className="lineup-more">
+              <span className="muted small">Also from</span>
+              <DudeIcons ids={l.suggestions} col={l.col} onAdd={onAddDude} />
+            </div>
+          )}
+        </>
       ) : (
         <div className="lineup-fix">
           <span>Nothing gives {col.label} to the team.</span>
@@ -92,6 +116,46 @@ function Line({ l, onAddDude, onFindRelics }: Readonly<{ l: FocusLine; onAddDude
         </div>
       )}
     </li>
+  );
+}
+
+/** Ranked teammates for the open Roster slots, each with why he fits. */
+/** The chart cells behind a pick: his focus-stat cells, plus Healing when he heals the team. */
+const pickCols = (dude: string, focus: string[]) => [
+  ...focus.filter((col) => cellOf(dude, col)),
+  ...(givesToTeam(cellOf(dude, 'heal')) && !focus.includes('heal') ? ['heal'] : []),
+];
+
+function FillTeam({
+  picks,
+  open,
+  focus,
+  onAddDude,
+}: Readonly<{ picks: TeamPick[]; open: number; focus: string[]; onAddDude: (id: string) => void }>) {
+  return (
+    <div className="fill-team">
+      <h4>
+        Fill your team <span className="muted small">{open === 1 ? '1 open slot' : `${open} open slots`}</span>
+      </h4>
+      <ol>
+        {picks.map((p) => {
+          const dude = dudeById.get(p.dude)!;
+          return (
+            <li key={p.dude}>
+              <Tip content={<DudeTip dude={p.dude} cols={pickCols(p.dude, focus)} add />} focusable={false} className="fill-tip">
+                <button className="fill-pick" onClick={() => onAddDude(p.dude)}>
+                  <Sprite id={dude.icon} size={26} />
+                  <span>
+                    <strong>{dude.name}</strong>
+                    <span className="muted small">{p.reasons.join(' · ')}</span>
+                  </span>
+                </button>
+              </Tip>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
 
@@ -123,6 +187,8 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
         </ul>
       )}
 
+      {a.fill.length > 0 && <FillTeam picks={a.fill} open={a.openSlots} focus={focus} onAddDude={onAddDude} />}
+
       <div className={`healer ${a.healer.healers.length ? 'fed' : 'unfed'}`}>
         {a.healer.healers.length ? (
           <p>
@@ -131,20 +197,18 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
         ) : (
           <>
             <p>
-              <strong>No healer yet.</strong> Add a Dude who heals other Dude Types.
+              <strong>No healer yet.</strong> Add a Dude who heals other Dude Types
+              {focus.length ? ' (the ones that also give your focus stats come first)' : ''}.
             </p>
             <DudeIcons ids={a.healer.suggestions} col="heal" onAdd={onAddDude} />
           </>
         )}
-        <p className="muted small">
-          Strongest healers in the chart (Healing graded as HP/s per Dude): {TOP_HEALERS}.
-        </p>
       </div>
 
       <details className="legend-box">
         <summary>Colour key</summary>
         <CellLegend />
-        <p className="muted small">From the synergy chart and spreadsheet by u/esmgcito on r/HowManyDudes.</p>
+        <p className="muted small">Colours from the synergy chart by u/esmgcito on r/HowManyDudes; grades are our estimates from the Dudex.</p>
       </details>
     </section>
   );

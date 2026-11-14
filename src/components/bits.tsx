@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { familyById, sprite, type Token } from '../data/game';
-import { CELL_LABELS, columnById, COLUMNS, dudeCells, GRADE_LABELS, type Cell, type ChartGrade } from '../data/chart';
+import { CELL_LABELS, cellOf, columnById, COLUMNS, dudeCells, GRADE_LABELS, gradeInfo, type Cell, type ChartGrade } from '../data/chart';
 import type { Grade } from '../lib/flyer';
 
 /** Stable keys from each token's own content; a counter only tells repeats of the same text apart. */
@@ -207,7 +207,7 @@ export function ColChip({
 }: Readonly<{
   col: string;
   cell?: Cell;
-  /** Strength grade from the chart spreadsheet (S–F). */
+  /** Strength grade (S–F), estimated from the Dudex text. */
   grade?: ChartGrade;
   compact?: boolean;
   /** The chip sits inside a button: show the tooltip on hover but don't make it a separate tab stop. */
@@ -242,6 +242,44 @@ export function ColChip({
       {c.icon ? <StatIcon id={c.icon} size={compact ? 14 : 16} /> : null}
       {compact ? <span className={c.icon ? 'sr-only' : 'col-abbr'}>{c.icon ? label : c.short}</span> : c.short}
     </Tip>
+  );
+}
+
+/**
+ * One chart cell explained, for tooltips: colour meaning, estimated amount and grade, and the Relics behind it.
+ * The same breakdown the Synergy chart shows on hover.
+ */
+export function CellDetail({ dude, col }: Readonly<{ dude: string; col: string }>) {
+  const c = columnById.get(col)!;
+  const cell = cellOf(dude, col);
+  const g = gradeInfo(dude, col);
+  return (
+    <span className="cell-detail">
+      <span className="tip-cell">
+        <span className={`swatch cell-${cell ?? 'none'}`} aria-hidden="true" />
+        <span>
+          <strong>{c.label}</strong>: {cell ? CELL_LABELS[cell] : 'not in the chart'}
+        </span>
+      </span>
+      {g ? (
+        <>
+          <span className="tip-note">
+            Grade {g.grade}: about {g.value}
+            {g.unit} {g.kind === 'team' ? 'to teammates' : 'to himself'}, {GRADE_LABELS[g.grade]}
+            {g.best ? ` (best: ${g.best})` : ''}
+          </span>
+          {g.sources.length > 0 && (
+            <span className="tip-list">
+              {g.sources.map((src) => (
+                <span key={src}>{src}</span>
+              ))}
+            </span>
+          )}
+        </>
+      ) : (
+        cell && <span className="tip-note">No amount we can estimate from the Relic text, so it counts as weak.</span>
+      )}
+    </span>
   );
 }
 

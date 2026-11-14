@@ -1292,6 +1292,59 @@ button {
   color: var(--ink-2);
 }
 
+.lineup-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 4px;
+}
+
+.fill-team {
+  margin-top: 12px;
+}
+
+.fill-team h4 {
+  margin: 0 0 6px;
+  font-family: var(--display);
+  font-size: 15px;
+}
+
+.fill-team ol {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fill-tip {
+  display: block;
+}
+
+.fill-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  text-align: left;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+
+.fill-pick:hover {
+  border-color: var(--ink-2);
+}
+
+.fill-pick > span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
 .lineup-fix {
   display: flex;
   flex-wrap: wrap;
@@ -1705,11 +1758,6 @@ button {
   color: var(--cell-text, var(--ink));
 }
 
-.chart td .grade.fam-only {
-  font-style: italic;
-  font-weight: 600;
-  color: var(--muted);
-}
 
 .chart-dude.static {
   cursor: default;
@@ -2382,6 +2430,17 @@ fieldset.stepper {
   font-family: var(--display);
   font-size: 16px;
   color: var(--good);
+}
+
+.cell-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cell-detail + .cell-detail {
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
 }
 
 .tip-list {

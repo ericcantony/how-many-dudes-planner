@@ -1,0 +1,3291 @@
+{
+ "best": {
+  "self": {
+   "evasion": {
+    "v": 30,
+    "key": "finance"
+   },
+   "max_hp": {
+    "v": 70,
+    "key": "psionic"
+   },
+   "atk_spd": {
+    "v": 85,
+    "key": "soccer"
+   },
+   "atk_pow": {
+    "v": 150,
+    "key": "frankendude"
+   },
+   "deflect": {
+    "v": 40,
+    "key": "samurai"
+   },
+   "run_spd": {
+    "v": 200,
+    "key": "cyborg"
+   },
+   "toughness": {
+    "v": 47.5,
+    "key": "farmer"
+   },
+   "cleave": {
+    "v": 100,
+    "key": "druid"
+   },
+   "crit": {
+    "v": 15,
+    "key": "druid"
+   },
+   "lifesteal": {
+    "v": 15,
+    "key": "warlock"
+   },
+   "block": {
+    "v": 20,
+    "key": "explorer"
+   },
+   "heal_recv": {
+    "v": 55,
+    "key": "zombie"
+   },
+   "crit_dmg": {
+    "v": 140,
+    "key": "pirate"
+   },
+   "regen": {
+    "v": 10,
+    "key": "quantum"
+   },
+   "heal": {
+    "v": 16,
+    "key": "construction"
+   },
+   "multihit": {
+    "v": 20,
+    "key": "cleric"
+   }
+  },
+  "team": {
+   "atk_pow": {
+    "v": 60,
+    "key": "general"
+   },
+   "run_spd": {
+    "v": 40,
+    "key": "hockey"
+   },
+   "evasion": {
+    "v": 7.2,
+    "key": "quantum"
+   },
+   "toughness": {
+    "v": 20,
+    "key": "general"
+   },
+   "deflect": {
+    "v": 15,
+    "key": "cyborg"
+   },
+   "crit": {
+    "v": 20,
+    "key": "general"
+   },
+   "regen": {
+    "v": 6.5,
+    "key": "coach"
+   },
+   "lifesteal": {
+    "v": 1.6,
+    "key": "vampire"
+   },
+   "block": {
+    "v": 5,
+    "key": "soccer"
+   },
+   "heal_recv": {
+    "v": 15,
+    "key": "explorer"
+   },
+   "multihit": {
+    "v": 6.9,
+    "key": "basketball"
+   },
+   "heal": {
+    "v": 21,
+    "key": "chef"
+   },
+   "crit_dmg": {
+    "v": 0.3,
+    "key": "samurai"
+   },
+   "max_hp": {
+    "v": 24,
+    "key": "necromancer"
+   },
+   "atk_spd": {
+    "v": 21,
+    "key": "necromancer"
+   },
+   "cleave": {
+    "v": 195,
+    "key": "broadcaster"
+   }
+  }
+ },
+ "rows": {
+  "bard": {
+   "atk_pow": {
+    "src": [
+     "Teammates, Four Chord Song: 4% × 4 stacks × 4s after a trigger 0.5 × a few Dudes 0.4",
+     "Teammates, Tuning Fork: 20% × 2s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 7.2,
+     "g": "F"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Four Chord Song: 4% × 4 stacks × 4s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 3.2,
+     "g": "F"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Teammates, Bass Drum: 2% × 4 stacks × the 4 Dudes his Song inspires 0.4",
+     "Himself, Dancing Shoes: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "D"
+    },
+    "team": {
+     "v": 3.2,
+     "g": "D"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Dancing Shoes: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Teammates, Requiem: 20% × 4s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 4,
+     "g": "E"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Tuning Fork: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   }
+  },
+  "cyborg": {
+   "atk_pow": {
+    "src": [
+     "Teammates, Extermination: 1% × rest of battle 0.7 × 25% chance × a few Dudes 0.4",
+     "Himself, Overclocked Servos: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "E"
+    },
+    "team": {
+     "v": 0.1,
+     "g": "F"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, Mag Boots: 20%",
+     "Teammates, Retractable Shield: 30% × 1s after a trigger 0.5 × all Dudes"
+    ],
+    "self": {
+     "v": 20,
+     "g": "C"
+    },
+    "team": {
+     "v": 15,
+     "g": "S"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Mag Boots: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Overclocked Servos: 200%"
+    ],
+    "self": {
+     "v": 200,
+     "g": "S"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Retractable Shield: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "E"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Targeting Computer: 10% (cap) × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "C"
+    }
+   }
+  },
+  "druid": {
+   "atk_pow": {
+    "src": [
+     "Himself, Bear Form: 30% × 3s after a trigger 0.5",
+     "Himself, Bear Arms: 5% × rest of battle 0.7",
+     "Himself, Bear Grill: 20% × in Bear Form 0.5",
+     "Himself, Bear Hug: 20% × in Bear Form 0.5"
+    ],
+    "self": {
+     "v": 38.5,
+     "g": "E"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Bear Form: 200% × 3s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 100,
+     "g": "S"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Bear Back: 20% × in Bear Form 0.5",
+     "Himself, Bear Hug: 10% × in Bear Form 0.5"
+    ],
+    "self": {
+     "v": 15,
+     "g": "D"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Bear Grill: 10% × in Bear Form 0.5",
+     "Himself, Bear Knuckle: 10%"
+    ],
+    "self": {
+     "v": 15,
+     "g": "S"
+    }
+   },
+   "lifesteal": {
+    "src": [
+     "Himself, Bear Grill: 10% × in Bear Form 0.5"
+    ],
+    "self": {
+     "v": 5,
+     "g": "D"
+    }
+   }
+  },
+  "football": {
+   "atk_pow": {
+    "src": [
+     "Himself, Blitz: 20% × 3s after a trigger 0.5",
+     "Himself, Compression Shorts: 5% × rest of battle 0.7",
+     "Himself, Warm Bench: 10%",
+     "Teammates, Warm Bench: 10% × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 23.5,
+     "g": "F"
+    },
+    "team": {
+     "v": 4,
+     "g": "F"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Instant Replay: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "block": {
+    "src": [
+     "Himself, Polarized Visor: 20% × 2s per Blitz (every 8s)"
+    ],
+    "self": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "regen": {
+    "src": [
+     "Teammates, Turf Tape: 2% × all Dudes"
+    ],
+    "team": {
+     "v": 2,
+     "g": "D"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Warm Bench: 5%",
+     "Teammates, Warm Bench: 5% × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 5,
+     "g": "F"
+    },
+    "team": {
+     "v": 2,
+     "g": "F"
+    }
+   }
+  },
+  "pirate": {
+   "evasion": {
+    "src": [
+     "Himself, Rum: 20% × 3s every 5s",
+     "Himself, Hair of the Dog: 20% × 3s per Rum (every 10s)",
+     "Himself, Hardtack: 20% × 3s after a trigger 0.5 × 30% chance"
+    ],
+    "self": {
+     "v": 21,
+     "g": "B"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Barrel of Oranges: 20%",
+     "Himself, Peg Leg: 20%"
+    ],
+    "self": {
+     "v": 40,
+     "g": "C"
+    }
+   },
+   "heal_recv": {
+    "src": [
+     "Himself, Barrel of Oranges: 5% × 5 stacks × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 17.5,
+     "g": "D"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Cutlass: 10% × Rum 3s every 5s",
+     "Himself, Hair of the Dog: 10% × 3s per Rum (every 10s)"
+    ],
+    "self": {
+     "v": 9,
+     "g": "C"
+    }
+   },
+   "crit_dmg": {
+    "src": [
+     "Himself, Cutlass: 5% × 40 stacks × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 140,
+     "g": "S"
+    }
+   }
+  },
+  "basic": {
+   "atk_pow": {
+    "src": [
+     "Himself, Mob Mentality: 2% × 30 copies"
+    ],
+    "self": {
+     "v": 60,
+     "g": "D"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Mob Mentality: 2% × 30 copies"
+    ],
+    "self": {
+     "v": 60,
+     "g": "A"
+    }
+   }
+  },
+  "vampire": {
+   "lifesteal": {
+    "src": [
+     "Teammates, Bloodsucker Aura: 2% × 4 stacks × 4s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 1.6,
+     "g": "D"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Blood Bag: 50%",
+     "Himself, Hollow Fangs: 50%"
+    ],
+    "self": {
+     "v": 100,
+     "g": "S"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Hollow Fangs: 60%",
+     "Himself, Venomous Lipstick: 30%"
+    ],
+    "self": {
+     "v": 90,
+     "g": "C"
+    }
+   }
+  },
+  "viking": {
+   "atk_spd": {
+    "src": [
+     "Himself, Berserker Rage: 50% × 3s after a trigger 0.5 × 5% chance",
+     "Himself, Loki's Arm: 50% × while Berserk 0.5"
+    ],
+    "self": {
+     "v": 26.3,
+     "g": "D"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Berserker Rage: 50% × 3s after a trigger 0.5 × 5% chance"
+    ],
+    "self": {
+     "v": 1.3,
+     "g": "F"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Grog: 100% × while Berserk 0.5"
+    ],
+    "self": {
+     "v": 50,
+     "g": "C"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Loki's Arm: 5% × after a trigger 0.5",
+     "Himself, Warhorn: 10%"
+    ],
+    "self": {
+     "v": 12.5,
+     "g": "F"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Wolfskin Cloak: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Wolfskin Cloak: 20% × while Berserk 0.5"
+    ],
+    "self": {
+     "v": 10,
+     "g": "E"
+    }
+   }
+  },
+  "spartan": {
+   "max_hp": {
+    "src": [
+     "Himself, Ab Roller: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, Ab Roller: 10%",
+     "Teammates, Aspis: 10% × 2s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 10,
+     "g": "E"
+    },
+    "team": {
+     "v": 2,
+     "g": "F"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Aspis: 15%"
+    ],
+    "self": {
+     "v": 15,
+     "g": "D"
+    }
+   },
+   "block": {
+    "src": [
+     "Teammates, Aspis: 10% × 2s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 2,
+     "g": "D"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Dory: 2% × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 1.4,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Leather Bracer: 5% × 3 stacks × 2s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 7.5,
+     "g": "C"
+    }
+   }
+  },
+  "soccer": {
+   "evasion": {
+    "src": [
+     "Himself, Agility Cone: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "D"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Agility Cone: 10% × 5 stacks × 3s after a trigger 0.5",
+     "Himself, Playbook: 2% × 30 copies"
+    ],
+    "self": {
+     "v": 85,
+     "g": "S"
+    }
+   },
+   "block": {
+    "src": [
+     "Himself, Goalie Gloves: 10%",
+     "Teammates, Goalie Gloves: 10% × 3s after a trigger 0.5 × all Dudes"
+    ],
+    "self": {
+     "v": 10,
+     "g": "C"
+    },
+    "team": {
+     "v": 5,
+     "g": "S"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Golden Cleats: 50%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "E"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Golden Cleats: 2% × rest of battle 0.7 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 0.6,
+     "g": "F"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Shin Guard: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "D"
+    }
+   }
+  },
+  "explorer": {
+   "block": {
+    "src": [
+     "Himself, Ancient Idol: 10% × 2 stacks × 5s per Canteen (every 3s)"
+    ],
+    "self": {
+     "v": 20,
+     "g": "S"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Fountain of Youth: 10% × rest of battle 0.7 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 2.8,
+     "g": "F"
+    }
+   },
+   "heal_recv": {
+    "src": [
+     "Teammates, Tinderbox: 15% (cap) × all Dudes"
+    ],
+    "team": {
+     "v": 15,
+     "g": "S"
+    }
+   }
+  },
+  "family:employed": {
+   "toughness": {
+    "src": [
+     "Teammates, Andon Cord: 90% × 2s after a trigger 0.5 × all Dudes"
+    ],
+    "team": {
+     "v": 45,
+     "g": "S"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Teammates, Safety Glasses: 10% × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "C"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Teammates, Safety Glasses: 10% × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "D"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Sensitivity Training: 4% × 3 Families × all Dudes"
+    ],
+    "team": {
+     "v": 12,
+     "g": "E"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Teammates, Tax Break: 1% × 20 stacks × all Dudes"
+    ],
+    "team": {
+     "v": 20,
+     "g": "B"
+    }
+   }
+  },
+  "psionic": {
+   "max_hp": {
+    "src": [
+     "Himself, Antifragility Implant: 30%",
+     "Himself, Memory Cube: 20%",
+     "Himself, Mental Wall: 20%"
+    ],
+    "self": {
+     "v": 70,
+     "g": "S"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, Dream Fortress: 1% × 20 stacks × 4s after a trigger 0.5 × 20% chance",
+     "Teammates, Dream Fortress: 1% × 20 stacks × 4s after a trigger 0.5 × 20% chance × a few Dudes 0.4",
+     "Himself, Memory Cube: 3% × 10 stacks × 3s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 17,
+     "g": "D"
+    },
+    "team": {
+     "v": 0.8,
+     "g": "F"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Mental Wall: 1% × 20 stacks × 2s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 10,
+     "g": "E"
+    }
+   }
+  },
+  "mummy": {
+   "crit": {
+    "src": [
+     "Himself, Anubis Statue: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "C"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Canopic Jar: 2% × rest of battle 0.7 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 0.6,
+     "g": "F"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Golden Tongue: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "crit_dmg": {
+    "src": [
+     "Himself, Sandstorm: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "E"
+    }
+   }
+  },
+  "wizard": {
+   "crit_dmg": {
+    "src": [
+     "Himself, Arcane Monocle: 50%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "D"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Arcane Monocle: 5% × 5 stacks × 4s after a trigger 0.5 × a few Dudes 0.4",
+     "Himself, Spell Book: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "E"
+    },
+    "team": {
+     "v": 5,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Ember Staff: 5% × 5s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 2.5,
+     "g": "F"
+    }
+   }
+  },
+  "family:action": {
+   "crit": {
+    "src": [
+     "Teammates, Arsenal: 5% × all Dudes",
+     "Himself, Bullet Time: 10% × 2s after a trigger 0.5 × 50% chance"
+    ],
+    "self": {
+     "v": 2.5,
+     "g": "F"
+    },
+    "team": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "crit_dmg": {
+    "src": [
+     "Teammates, Arsenal: 20% × all Dudes"
+    ],
+    "team": {
+     "v": 20,
+     "g": "S"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Himself, Bullet Time: 30% × 2s after a trigger 0.5 × 50% chance"
+    ],
+    "self": {
+     "v": 7.5,
+     "g": "E"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Teammates, Nuclear Codes: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Plot Armor: 50% × 2s after a trigger 0.5 × 0.5% chance"
+    ],
+    "self": {
+     "v": 0.1,
+     "g": "F"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Plot Armor: 90% × 2s after a trigger 0.5 × 0.5% chance",
+     "Teammates, Trench Coat: 15% × after a trigger 0.5 × all Dudes"
+    ],
+    "self": {
+     "v": 0.2,
+     "g": "F"
+    },
+    "team": {
+     "v": 7.5,
+     "g": "D"
+    }
+   }
+  },
+  "coach": {
+   "max_hp": {
+    "src": [
+     "Himself, Assistant Coach: 1% × 20 stacks",
+     "Himself, Cooler: 20%"
+    ],
+    "self": {
+     "v": 40,
+     "g": "C"
+    }
+   },
+   "regen": {
+    "src": [
+     "Himself, Assistant Coach: 0.3% × 20 stacks",
+     "Teammates, Cooler: 0.1% × 50 stacks × 2s after a trigger 0.5 × all Dudes",
+     "Teammates, Headset: 0.4% × 10 stacks × all Dudes"
+    ],
+    "self": {
+     "v": 6,
+     "g": "C"
+    },
+    "team": {
+     "v": 6.5,
+     "g": "S"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Stache Wax: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, Stache Wax: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "C"
+    }
+   },
+   "block": {
+    "src": [
+     "Himself, Stopwatch: 15% × 2s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 7.5,
+     "g": "D"
+    }
+   },
+   "multihit": {
+    "src": [
+     "Teammates, Whistle: 20% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 4,
+     "g": "C"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Whistle: 50% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 10,
+     "g": "E"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Whiteboard: 300% of Attack Power 12.5 × per Walk It Off (every 4s) = 9.38 HP/s"
+    ],
+    "team": {
+     "v": 9.4,
+     "g": "D"
+    }
+   }
+  },
+  "knight": {
+   "toughness": {
+    "src": [
+     "Himself, Bagpipes: 10%",
+     "Himself, Belted Greaves: 10%",
+     "Teammates, Belted Greaves: 10% (cap) × all Dudes"
+    ],
+    "self": {
+     "v": 20,
+     "g": "D"
+    },
+    "team": {
+     "v": 10,
+     "g": "C"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Blacksmith's Hammer: 30%",
+     "Himself, Scroll of Mockery: 20%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "B"
+    }
+   }
+  },
+  "samurai": {
+   "deflect": {
+    "src": [
+     "Himself, Bamboo Dummy: 20%",
+     "Himself, Bokken: 20%"
+    ],
+    "self": {
+     "v": 40,
+     "g": "S"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Bamboo Dummy: 5% × 3 stacks × 5s after a trigger 0.5",
+     "Himself, Katana Sharpener: 2% × 4s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 8.5,
+     "g": "C"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Bokken: 20%",
+     "Himself, Katana Sharpener: 20% × 4s after a trigger 0.5",
+     "Himself, Wakizashi: 2% × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 31.4,
+     "g": "E"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Bokken: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "crit_dmg": {
+    "src": [
+     "Teammates, Hachimaki: 5% × rest of battle 0.7 × 20% chance × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 0.3,
+     "g": "F"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Naginata: 50% × 5s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 25,
+     "g": "F"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Wakizashi: 50%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "C"
+    }
+   }
+  },
+  "paladin": {
+   "atk_pow": {
+    "src": [
+     "Teammates, Battle Hymn: 20% × Blessing 0.5 × a few Dudes 0.4",
+     "Teammates, Medallion of Vengeance: 15% × rest of battle 0.7 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 8.2,
+     "g": "F"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Battle Hymn: 30% × Blessing 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 6,
+     "g": "F"
+    }
+   },
+   "heal_recv": {
+    "src": [
+     "Himself, Book of Life: 10%",
+     "Himself, Ruby Scepter: 20%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "C"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Golden Shield: 30%",
+     "Himself, Ruby Scepter: 20%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "B"
+    }
+   }
+  },
+  "family:warrior": {
+   "crit": {
+    "src": [
+     "Teammates, Battle Standard: 5% × all Dudes",
+     "Teammates, Caged Tiger: 20% × 3s after a trigger 0.5 × all Dudes",
+     "Teammates, Lieutenant's Sigil: 10% × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 19,
+     "g": "S"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Teammates, Battle Standard: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Dog Tag: 20% × 30 stacks × rest of battle 0.7 × all Dudes"
+    ],
+    "team": {
+     "v": 420,
+     "g": "S"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Teammates, Hidden Daggers: 40% × all Dudes"
+    ],
+    "team": {
+     "v": 40,
+     "g": "E"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Teammates, Liquid Courage: 10% × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "C"
+    }
+   },
+   "block": {
+    "src": [
+     "Teammates, Parry Buckler: 10% × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "S"
+    }
+   }
+  },
+  "family:sports": {
+   "atk_pow": {
+    "src": [
+     "Himself, Beer Helmet: 2% × 10 stacks × 3s after a trigger 0.5",
+     "Teammates, Creatine: 30% × 4s of a 30s battle × all Dudes",
+     "Himself, Foam Finger: 2% × 10 stacks",
+     "Teammates, Jumbotron: 1% × 30 stacks × rest of battle 0.7 × all Dudes"
+    ],
+    "self": {
+     "v": 30,
+     "g": "E"
+    },
+    "team": {
+     "v": 25,
+     "g": "D"
+    }
+   },
+   "regen": {
+    "src": [
+     "Teammates, Creatine: 2% × rest of battle 0.7 × all Dudes"
+    ],
+    "team": {
+     "v": 1.4,
+     "g": "E"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Vuvuzela: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Vuvuzela: 10% × 20 stacks × rest of battle 0.7 × 10% chance × all Dudes"
+    ],
+    "team": {
+     "v": 14,
+     "g": "D"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Halftime Show: 30% of an average Max HP 138 × 3 Dudes × every 10s = 12.44 HP/s"
+    ],
+    "team": {
+     "v": 12.4,
+     "g": "C"
+    }
+   }
+  },
+  "hockey": {
+   "max_hp": {
+    "src": [
+     "Himself, Bloody Grin: 20%",
+     "Himself, Lucky Puck: 30%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "B"
+    }
+   },
+   "block": {
+    "src": [
+     "Himself, Bloody Grin: 10% × 3 stacks × 3s after a trigger 0.5",
+     "Himself, Penalty Box: 5%",
+     "Teammates, Penalty Box: 20% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 20,
+     "g": "S"
+    },
+    "team": {
+     "v": 4,
+     "g": "B"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Broken Stick: 5%",
+     "Teammates, Hat Trick: 5% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 5,
+     "g": "D"
+    },
+    "team": {
+     "v": 1,
+     "g": "F"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Hat Trick: 20% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 4,
+     "g": "F"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Hat Trick: 50% × 3s after a trigger 0.5 × a few Dudes 0.4",
+     "Teammates, Ice Resurfacer: 2% × 15 stacks × all Dudes"
+    ],
+    "team": {
+     "v": 40,
+     "g": "S"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Teammates, Ice Resurfacer: 1% × 15 stacks × all Dudes"
+    ],
+    "team": {
+     "v": 15,
+     "g": "S"
+    }
+   }
+  },
+  "group:universal": {
+   "atk_spd": {
+    "src": [
+     "Himself, Bloody Talisman: 1% × 20 stacks × rest of battle 0.7",
+     "Himself, Padded Helmet: 30% × after a trigger 0.5",
+     "Teammates, Splitting Headache: 50% × 5s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 29,
+     "g": "D"
+    },
+    "team": {
+     "v": 10,
+     "g": "D"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Teammates, Bonfire: 20% (cap) × all Dudes",
+     "Teammates, Caboose: 30% × a few Dudes 0.4",
+     "Teammates, Universal Healthcare: 10% × all Dudes"
+    ],
+    "team": {
+     "v": 42,
+     "g": "S"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Brass Knuckles: 30% × after a trigger 0.5 × all Dudes",
+     "Himself, Butterfly Stinger: 20% × 2s after a trigger 0.5",
+     "Teammates, Captain's Hat: 30% × a few Dudes 0.4",
+     "Teammates, Championship Belt: 30% × a few Dudes 0.4",
+     "Teammates, Death Rattle: 30% (cap) × all Dudes",
+     "Teammates, Motivational Poster: 10% × all Dudes",
+     "Teammates, Splitting Headache: 50% × 5s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 10,
+     "g": "F"
+    },
+    "team": {
+     "v": 89,
+     "g": "S"
+    }
+   },
+   "heal_recv": {
+    "src": [
+     "Teammates, Fairy Ring: 100% × all Dudes"
+    ],
+    "team": {
+     "v": 100,
+     "g": "S"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Focus Mitts: 5% × all Dudes",
+     "Teammates, Splitting Headache: 10% × 5s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 7,
+     "g": "D"
+    }
+   },
+   "crit_dmg": {
+    "src": [
+     "Himself, Focus Mitts: 10% × after a trigger 0.5"
+    ],
+    "self": {
+     "v": 5,
+     "g": "F"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Teammates, Golden Glove: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 5,
+     "g": "C"
+    }
+   },
+   "lifesteal": {
+    "src": [
+     "Teammates, Heating Pad: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 5,
+     "g": "S"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Heating Pad: 40% × 2s after a trigger 0.5",
+     "Himself, Rage Bait: 100% × 3s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 70,
+     "g": "B"
+    }
+   },
+   "regen": {
+    "src": [
+     "Teammates, Ice Bath: 2% × all Dudes"
+    ],
+    "team": {
+     "v": 2,
+     "g": "D"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Teammates, Mouthguard: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 5,
+     "g": "D"
+    }
+   },
+   "block": {
+    "src": [
+     "Himself, Mouthguard: 10% × 2s after a trigger 0.5 × 10% chance"
+    ],
+    "self": {
+     "v": 0.5,
+     "g": "F"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Padded Helmet: 100% × after a trigger 0.5"
+    ],
+    "self": {
+     "v": 50,
+     "g": "E"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Teammates, Pumpkin Latte: 20% × potions 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 4,
+     "g": "E"
+    }
+   },
+   "heal": {
+    "src": [
+     "Himself, Half-Full Glass: 15% of an average Max HP 138 × 1 hit taken/s = 20.73 HP/s"
+    ],
+    "self": {
+     "v": 20.7,
+     "g": "S"
+    }
+   }
+  },
+  "necromancer": {
+   "atk_pow": {
+    "src": [
+     "Teammates, Bone Axe: 100% × another Dude Type 0.4"
+    ],
+    "team": {
+     "v": 40,
+     "g": "C"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Bone Axe: 10% × on Fatal Damage 0.1 × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 0.6,
+     "g": "F"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Teammates, Bony Backhand: 20% × another Dude Type 0.4"
+    ],
+    "team": {
+     "v": 8,
+     "g": "D"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Teammates, Calcium Pills: 60% × another Dude Type 0.4",
+     "Himself, Calcium Pills: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    },
+    "team": {
+     "v": 24,
+     "g": "S"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Teammates, Frenzy Stone: 30% (cap) × rest of battle 0.7 × all Dudes"
+    ],
+    "team": {
+     "v": 21,
+     "g": "S"
+    }
+   }
+  },
+  "manager": {
+   "atk_spd": {
+    "src": [
+     "Teammates, Bonus Check: 20% × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 8,
+     "g": "D"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Bonus Check: 5% × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 2,
+     "g": "F"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Deadline: 20%",
+     "Himself, Employee Award: 20%",
+     "Teammates, Employee Award: 20% × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 40,
+     "g": "C"
+    },
+    "team": {
+     "v": 8,
+     "g": "D"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, Employee Award: 10%",
+     "Teammates, Employee Award: 10% × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 10,
+     "g": "E"
+    },
+    "team": {
+     "v": 4,
+     "g": "E"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Pizza Party: 50% of DPS 20 × per Micromanage (every 4s) = 2.5 HP/s"
+    ],
+    "team": {
+     "v": 2.5,
+     "g": "F"
+    }
+   }
+  },
+  "construction": {
+   "max_hp": {
+    "src": [
+     "Himself, Boombox: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Boombox: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Steel-Toed Boots: 10% × 5 stacks × 3s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 25,
+     "g": "C"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Tape Measure: 5% × 3 stacks × 4s after a trigger 0.5 × 10% chance × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 0.3,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Tape Measure: 5% × 3 stacks × 4s after a trigger 0.5 × 10% chance × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 0.3,
+     "g": "F"
+    }
+   },
+   "heal": {
+    "src": [
+     "Himself, Lunch Pail: 100% of his Max HP 200 × every 250 damage (0.08/s) = 16 HP/s"
+    ],
+    "self": {
+     "v": 16,
+     "g": "S"
+    }
+   }
+  },
+  "alien": {
+   "regen": {
+    "src": [
+     "Himself, Brain Implant: 5%"
+    ],
+    "self": {
+     "v": 5,
+     "g": "C"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Probe: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, RAD Infusion: 25% × 4 stacks × 2s per Tractor Beam (every 3s) × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 26.7,
+     "g": "D"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, RAD Infusion: 5% × 4 stacks × 2s per Tractor Beam (every 3s) × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 5.3,
+     "g": "E"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, UFO Wax: 15% × 3s per Tractor Beam (every 3s)",
+     "Teammates, UFO Wax: 15% × 3s per Tractor Beam (every 3s) × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 15,
+     "g": "D"
+    },
+    "team": {
+     "v": 6,
+     "g": "D"
+    }
+   }
+  },
+  "frankendude": {
+   "regen": {
+    "src": [
+     "Himself, Brain in a Jar: 4%",
+     "Himself, Copper Bolts: 1% × 6 stacks × 3s after a trigger 0.5 × 20% chance",
+     "Himself, Organ Bucket: 5%"
+    ],
+    "self": {
+     "v": 9.6,
+     "g": "S"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Copper Bolts: 30%",
+     "Himself, Leaky Heart Valve: 4% × 5 stacks × 5s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 40,
+     "g": "D"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Jaw Implant: 20% × on Fatal Damage 0.1",
+     "Himself, Leaky Heart Valve: 3% × 5 stacks × 5s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 9.5,
+     "g": "E"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Leaky Heart Valve: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Organ Bucket: 100%"
+    ],
+    "self": {
+     "v": 100,
+     "g": "C"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Organ Bucket: 5% × 30 copies"
+    ],
+    "self": {
+     "v": 150,
+     "g": "S"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Blood Pump: 4% of his Max HP 180 × every 1s × 2 (Organ Donor List) × 0.5 (his own HP, a transfer) + 60% of it as new healing (Bone Broth) = 15.84 HP/s"
+    ],
+    "team": {
+     "v": 15.8,
+     "g": "B"
+    }
+   }
+  },
+  "dentist": {
+   "atk_spd": {
+    "src": [
+     "Teammates, Brilliant Smile: 5% × 5 stacks × 4s after a trigger 0.5 × a few Dudes 0.4",
+     "Himself, Retainer: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    },
+    "team": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Brilliant Smile: 5% × 5 stacks × 4s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 5,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Laughing Gas: 5%"
+    ],
+    "self": {
+     "v": 5,
+     "g": "D"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Mouthwash: 50% of Attack Power 10 × per Novocaine Injection (every 4s) = 1.25 HP/s",
+     "Teammates, Retainer: 3% of an average Max HP 138 × every 1s = 4.15 HP/s"
+    ],
+    "team": {
+     "v": 5.4,
+     "g": "E"
+    }
+   }
+  },
+  "agent": {
+   "toughness": {
+    "src": [
+     "Himself, Bulletproof Suit: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "D"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Cuffed Briefcase: 5% × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 3.5,
+     "g": "F"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Cuffed Briefcase: 5% × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 3.5,
+     "g": "F"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, Disguise: 20%",
+     "Teammates, Disguise: 20% × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 20,
+     "g": "C"
+    },
+    "team": {
+     "v": 8,
+     "g": "C"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Disguise: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Earpiece: 30%",
+     "Teammates, Secret Orders: 40% × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    },
+    "team": {
+     "v": 16,
+     "g": "B"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Teammates, Earpiece: 5% × 3 stacks × 8s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 3,
+     "g": "D"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Secret Orders: 50%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "C"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Secret Orders: 10% × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 4,
+     "g": "E"
+    }
+   }
+  },
+  "chef": {
+   "toughness": {
+    "src": [
+     "Himself, Catering Truck: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "D"
+    }
+   },
+   "block": {
+    "src": [
+     "Himself, Catering Truck: 10% × after a trigger 0.5"
+    ],
+    "self": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Teammates, Oregano: 10% × Burger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 2,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Special Sauce: 10% × Burger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 2,
+     "g": "F"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Waffle Fries: 5% × 5 stacks × Burger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 5,
+     "g": "F"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Burger: 70% of Attack Power 20 × 1 attacks/s × 1.5 (Mise en Place) × 1 (Special Sauce) = 21 HP/s"
+    ],
+    "team": {
+     "v": 21,
+     "g": "S"
+    }
+   }
+  },
+  "cave": {
+   "max_hp": {
+    "src": [
+     "Himself, Cave Painting: 1% × 30 copies"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Pyre: 15%",
+     "Himself, Trophy Necklace: 5% × 5s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 17.5,
+     "g": "D"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Skull Drum: 3%",
+     "Himself, Spare Rock: 30%"
+    ],
+    "self": {
+     "v": 33,
+     "g": "E"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Thagomizer: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "C"
+    }
+   }
+  },
+  "farmer": {
+   "toughness": {
+    "src": [
+     "Himself, Chore List: 95% × 3s after a trigger 0.5",
+     "Teammates, Salt Lick: 40% × 4s of a 30s battle × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 47.5,
+     "g": "S"
+    },
+    "team": {
+     "v": 2.1,
+     "g": "F"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Pitchfork: 20% × after a trigger 0.5"
+    ],
+    "self": {
+     "v": 10,
+     "g": "F"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Sprinkler: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "regen": {
+    "src": [
+     "Teammates, Sprinkler: 0.2% × 30 copies × all Dudes"
+    ],
+    "team": {
+     "v": 6,
+     "g": "A"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Trucker Hat: 1% × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 0.7,
+     "g": "F"
+    }
+   }
+  },
+  "time": {
+   "max_hp": {
+    "src": [
+     "Himself, Chrono Towel: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Fossilizer: 20%",
+     "Himself, Fossilizer: 4% × 5 stacks × 3s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 30,
+     "g": "C"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Teammates, Particle Accelerator: 20% × 5 stacks × 2s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 20,
+     "g": "S"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Particle Accelerator: 20% × 5 stacks × 2s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 20,
+     "g": "C"
+    }
+   }
+  },
+  "general": {
+   "toughness": {
+    "src": [
+     "Himself, Combat Boots: 20%",
+     "Teammates, Imposing Podium: 10% × 5 stacks × 4s per Tactical Command (every 4s) × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 20,
+     "g": "D"
+    },
+    "team": {
+     "v": 20,
+     "g": "S"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Combat Boots: 20%",
+     "Teammates, Combat Radio: 15% × 10 stacks × 4s per Tactical Command (every 4s) × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 20,
+     "g": "F"
+    },
+    "team": {
+     "v": 60,
+     "g": "S"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Combat Radio: 5% × 10 stacks × 4s per Tactical Command (every 4s) × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 20,
+     "g": "S"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Teammates, Combat Radio: 30% × 10 stacks × 4s per Tactical Command (every 4s) × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 120,
+     "g": "C"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Heroic Medal: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Frilled Shoulderpads: 20% of an average Max HP 138 × per Tactical Command (every 4s) = 6.91 HP/s"
+    ],
+    "team": {
+     "v": 6.9,
+     "g": "D"
+    }
+   }
+  },
+  "electrician": {
+   "atk_pow": {
+    "src": [
+     "Himself, Conduit: 30%",
+     "Himself, Wire Stripper: 5%"
+    ],
+    "self": {
+     "v": 35,
+     "g": "E"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Teammates, Electrical Tape: 4% × 5 stacks × 5s after a trigger 0.5 × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 6,
+     "g": "E"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Teammates, Electrical Tape: 1% × 5 stacks × 5s after a trigger 0.5 × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 1.5,
+     "g": "E"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Ground Wire: 5% × 40 stacks × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 140,
+     "g": "B"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Lightning Rod: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Wire Stripper: 50%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "C"
+    }
+   }
+  },
+  "western": {
+   "toughness": {
+    "src": [
+     "Himself, Cowbell: 15%",
+     "Himself, Moonshine: 30% × 5s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 30,
+     "g": "C"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Spurs: 150%"
+    ],
+    "self": {
+     "v": 150,
+     "g": "B"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Spurs: 2% × 5 stacks × 4s per Lasso (every 3s) × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 6,
+     "g": "D"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Spurs: 5% × 5 stacks × 4s per Lasso (every 3s) × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 15,
+     "g": "E"
+    }
+   }
+  },
+  "hacker": {
+   "atk_pow": {
+    "src": [
+     "Himself, DDOS: 10% × rest of battle 0.7",
+     "Himself, Fork Bomb: 30%"
+    ],
+    "self": {
+     "v": 37,
+     "g": "E"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Firewall: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "crit_dmg": {
+    "src": [
+     "Himself, Firewall: 50%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "D"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Red Team: 5%",
+     "Himself, Script Kitty: 10% × 4s per Exploit (every 4s)"
+    ],
+    "self": {
+     "v": 15,
+     "g": "S"
+    }
+   }
+  },
+  "medic": {
+   "crit": {
+    "src": [
+     "Teammates, Death Mask: 2% × 5 stacks × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 2,
+     "g": "F"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Teammates, Death Mask: 2% × 5 stacks × 3s after a trigger 0.5 × a few Dudes 0.4",
+     "Himself, Rubber Glove: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "D"
+    },
+    "team": {
+     "v": 2,
+     "g": "F"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Epinephrine: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "F"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Epinephrine: 5% × 4 stacks × 5s after a trigger 0.5",
+     "Teammates, Tourniquet: 30% × 5s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 10,
+     "g": "F"
+    },
+    "team": {
+     "v": 6,
+     "g": "E"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Hand Sanitizer: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Himself, Medical Bag: 50%",
+     "Teammates, Tourniquet: 100% × 5s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 50,
+     "g": "E"
+    },
+    "team": {
+     "v": 20,
+     "g": "C"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Triage: 10 HP × 2 Dudes × every 30 damage (0.67/s) = 13.33 HP/s"
+    ],
+    "team": {
+     "v": 13.3,
+     "g": "C"
+    }
+   }
+  },
+  "finance": {
+   "atk_pow": {
+    "src": [
+     "Teammates, Diversified Portfolio: 1% × 10 stacks × all Dudes",
+     "Himself, Line of Credit: 1%"
+    ],
+    "self": {
+     "v": 1,
+     "g": "F"
+    },
+    "team": {
+     "v": 10,
+     "g": "F"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Teammates, Diversified Portfolio: 1% × 10 stacks × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "D"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Teammates, Diversified Portfolio: 2% × 10 stacks × all Dudes"
+    ],
+    "team": {
+     "v": 20,
+     "g": "F"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Diversified Portfolio: 4% × 10 stacks × all Dudes"
+    ],
+    "team": {
+     "v": 40,
+     "g": "S"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, Financial Calculator: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "C"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Himself, Tax Evasion: 30% (cap)"
+    ],
+    "self": {
+     "v": 30,
+     "g": "S"
+    }
+   }
+  },
+  "tennis": {
+   "crit_dmg": {
+    "src": [
+     "Teammates, Doubles Alley: 1% × rest of battle 0.7 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 0.3,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Overgrip: 5%"
+    ],
+    "self": {
+     "v": 5,
+     "g": "D"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Overgrip: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "E"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Spare Rackets: 100% × 3s after a trigger 0.5 × 5% chance",
+     "Himself, Speed Gun: 20%"
+    ],
+    "self": {
+     "v": 22.5,
+     "g": "F"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Himself, Stringing Machine: 50%"
+    ],
+    "self": {
+     "v": 50,
+     "g": "C"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Training Ladder: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Himself, Training Ladder: 10% × 3 stacks × 4s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 15,
+     "g": "C"
+    }
+   }
+  },
+  "quantum": {
+   "max_hp": {
+    "src": [
+     "Himself, Duality: 30%",
+     "Teammates, Duality: 30% × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    },
+    "team": {
+     "v": 12,
+     "g": "C"
+    }
+   },
+   "deflect": {
+    "src": [
+     "Himself, Duality: 20% × 2s per Quantum Echo (every 1s)"
+    ],
+    "self": {
+     "v": 20,
+     "g": "C"
+    }
+   },
+   "regen": {
+    "src": [
+     "Himself, Entanglement: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "S"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Teammates, Superposition: 20% × 3s every 5s × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 7.2,
+     "g": "S"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Quantum Echo: 50% of DPS 22 × every 1s × 1 (Wave Function) = 11 HP/s"
+    ],
+    "team": {
+     "v": 11,
+     "g": "C"
+    }
+   }
+  },
+  "ranger": {
+   "crit": {
+    "src": [
+     "Himself, Eagle Amulet: 1% × rest of battle 0.7 × 30% chance",
+     "Himself, Hunter's Blade: 10%"
+    ],
+    "self": {
+     "v": 10.2,
+     "g": "C"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Eagle Amulet: 5% × rest of battle 0.7 × 30% chance",
+     "Himself, Elven Aura: 5% × 3 stacks × 3s after a trigger 0.5",
+     "Teammates, Elven Aura: 5% × 3 stacks × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 8.6,
+     "g": "F"
+    },
+    "team": {
+     "v": 3,
+     "g": "F"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Himself, Elven Aura: 5% × 3 stacks × 3s after a trigger 0.5",
+     "Teammates, Elven Aura: 5% × 3 stacks × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 7.5,
+     "g": "E"
+    },
+    "team": {
+     "v": 3,
+     "g": "D"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Hunter's Blade: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   }
+  },
+  "family:fantasy": {
+   "deflect": {
+    "src": [
+     "Himself, Emergency Ring: 100% × on Fatal Damage 0.1 × 15% chance"
+    ],
+    "self": {
+     "v": 1.5,
+     "g": "F"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Teammates, False Face: 20% × 8s of a 30s battle × all Dudes",
+     "Teammates, Sequined Vest: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 10.3,
+     "g": "S"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Jazz Flute: 10% × 2s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 5,
+     "g": "D"
+    }
+   }
+  },
+  "family:undead": {
+   "lifesteal": {
+    "src": [
+     "Teammates, False Fangs: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 5,
+     "g": "S"
+    }
+   },
+   "heal_recv": {
+    "src": [
+     "Teammates, Memento Mori: 10% × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "C"
+    }
+   },
+   "regen": {
+    "src": [
+     "Teammates, Ritual Dagger: 2% × all Dudes"
+    ],
+    "team": {
+     "v": 2,
+     "g": "D"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Teammates, Rotting Steak: 10% × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "D"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Rotting Steak: 30% × all Dudes"
+    ],
+    "team": {
+     "v": 30,
+     "g": "B"
+    }
+   },
+   "heal": {
+    "src": [
+     "Himself, Sewing Kit: 100% of damage taken (10% Max HP/s) × per second × 15% chance = 2.07 HP/s"
+    ],
+    "self": {
+     "v": 2.1,
+     "g": "F"
+    }
+   }
+  },
+  "family:scifi": {
+   "deflect": {
+    "src": [
+     "Himself, Force Field: 30% × 3s after a trigger 0.5",
+     "Teammates, Shield Belt: 15% × all Dudes"
+    ],
+    "self": {
+     "v": 15,
+     "g": "D"
+    },
+    "team": {
+     "v": 15,
+     "g": "S"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Teammates, Medical Nanites: 5% × all Dudes"
+    ],
+    "team": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "regen": {
+    "src": [
+     "Teammates, Medical Nanites: 1% × all Dudes"
+    ],
+    "team": {
+     "v": 1,
+     "g": "F"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Time Sink: 3% × 5 stacks × 5s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 7.5,
+     "g": "F"
+    }
+   }
+  },
+  "ghost": {
+   "max_hp": {
+    "src": [
+     "Teammates, Fresh Sheets: 1% × 10 stacks × all Dudes"
+    ],
+    "team": {
+     "v": 10,
+     "g": "D"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Himself, Fresh Sheets: 10%",
+     "Teammates, Phantasm Crystal: 10% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 10,
+     "g": "D"
+    },
+    "team": {
+     "v": 2,
+     "g": "E"
+    }
+   },
+   "regen": {
+    "src": [
+     "Teammates, Haunted Mirror: 2% × 3 stacks × 5s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 1.2,
+     "g": "F"
+    }
+   },
+   "lifesteal": {
+    "src": [
+     "Teammates, Phantasm Crystal: 5% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 1,
+     "g": "E"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Possessed Urn: 5% × 3s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 2.5,
+     "g": "F"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Phase Shift: 100% of Attack Power 8.3 × 2 Dudes × 2.4 attacks/s × 30% chance = 11.95 HP/s"
+    ],
+    "team": {
+     "v": 12,
+     "g": "C"
+    }
+   }
+  },
+  "mutant": {
+   "regen": {
+    "src": [
+     "Himself, Growth Hormone: 5%"
+    ],
+    "self": {
+     "v": 5,
+     "g": "C"
+    }
+   },
+   "heal_recv": {
+    "src": [
+     "Teammates, Growth Hormone: 10% × 2 stacks × 5s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 4,
+     "g": "E"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Growth Hormone: 10% × 2 stacks × 5s after a trigger 0.5 × a few Dudes 0.4",
+     "Himself, Overactive Amygdala: 10% × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 7,
+     "g": "F"
+    },
+    "team": {
+     "v": 4,
+     "g": "F"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Keratin Sheet: 15%",
+     "Teammates, Keratin Sheet: 10% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "self": {
+     "v": 15,
+     "g": "D"
+    },
+    "team": {
+     "v": 2,
+     "g": "F"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Teammates, Keratin Sheet: 30% × 3s after a trigger 0.5 × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 6,
+     "g": "F"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Viral Load: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Floofballs: 100% of Attack Power 14.3 × 1.4 attacks/s × 50% chance × 1.3 (Zinc Finger) = 13.01 HP/s"
+    ],
+    "team": {
+     "v": 13,
+     "g": "C"
+    }
+   }
+  },
+  "broadcaster": {
+   "toughness": {
+    "src": [
+     "Himself, Handheld Microphone: 20%",
+     "Teammates, Stat Sheet: 1% × 10 stacks × all Dudes"
+    ],
+    "self": {
+     "v": 20,
+     "g": "D"
+    },
+    "team": {
+     "v": 10,
+     "g": "C"
+    }
+   },
+   "block": {
+    "src": [
+     "Himself, Handheld Microphone: 20% × 2s per Play by Play (every 3s)"
+    ],
+    "self": {
+     "v": 13.3,
+     "g": "C"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Production Trailer: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "cleave": {
+    "src": [
+     "Teammates, Stat Sheet: 5% × 30 copies × after a trigger 0.5 × all Dudes",
+     "Teammates, Trophy Cup: 10% × 30 copies × 3s per Play by Play (every 3s) × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 195,
+     "g": "S"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Trophy Cup: 10% × 3s per Play by Play (every 3s) × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 4,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Trophy Cup: 1% × 30 copies × 3s per Play by Play (every 3s) × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 12,
+     "g": "C"
+    }
+   }
+  },
+  "cleric": {
+   "multihit": {
+    "src": [
+     "Himself, Holy Water: 5% × 4 stacks × 3s per Divine Pulse (every 2s)"
+    ],
+    "self": {
+     "v": 20,
+     "g": "S"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Incense Holder: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "E"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Protective Cloak: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "E"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Teammates, Thoughts and Prayers: 1% × 10 stacks × 4s per Divine Pulse (every 2s) × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 4,
+     "g": "C"
+    }
+   },
+   "heal": {
+    "src": [
+     "Teammates, Divine Pulse: 100% of DPS 20 × every 2s × 1 (Divining Rod) × 1 (Holy Water) × 1.05 (Incense Holder) × 1.1 (Thoughts and Prayers) = 11.55 HP/s"
+    ],
+    "team": {
+     "v": 11.6,
+     "g": "C"
+    }
+   }
+  },
+  "basketball": {
+   "atk_pow": {
+    "src": [
+     "Himself, Jump Shoes: 10% × 20 stacks × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 140,
+     "g": "A"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Himself, Knee Sleeve: 5%",
+     "Teammates, Knee Sleeve: 5% × 3 stacks × 4s per Dunk (every 7s) × nearby Dudes 0.6"
+    ],
+    "self": {
+     "v": 5,
+     "g": "F"
+    },
+    "team": {
+     "v": 5.1,
+     "g": "B"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Tall Socks: 1% × 5 stacks × 4s per Dunk (every 7s) × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 1.7,
+     "g": "F"
+    }
+   },
+   "multihit": {
+    "src": [
+     "Teammates, Tall Socks: 4% × 5 stacks × 4s per Dunk (every 7s) × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 6.9,
+     "g": "S"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Trampoline: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   }
+  },
+  "zombie": {
+   "atk_pow": {
+    "src": [
+     "Himself, Loose Tooth: 20% × 5 stacks"
+    ],
+    "self": {
+     "v": 100,
+     "g": "C"
+    }
+   },
+   "heal_recv": {
+    "src": [
+     "Himself, Loose Tooth: 2% × 5 stacks",
+     "Himself, Old Jacket: 30%",
+     "Himself, Willing Flesh: 15%"
+    ],
+    "self": {
+     "v": 55,
+     "g": "S"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Old Jacket: 20%",
+     "Himself, Shrunken Head: 20%",
+     "Teammates, Tattered Shoes: 2% × 5 stacks × all Dudes"
+    ],
+    "self": {
+     "v": 40,
+     "g": "C"
+    },
+    "team": {
+     "v": 10,
+     "g": "D"
+    }
+   },
+   "regen": {
+    "src": [
+     "Himself, Shrunken Head: 4%"
+    ],
+    "self": {
+     "v": 4,
+     "g": "D"
+    }
+   },
+   "run_spd": {
+    "src": [
+     "Teammates, Tattered Shoes: 5% × 5 stacks × all Dudes"
+    ],
+    "team": {
+     "v": 25,
+     "g": "C"
+    }
+   }
+  },
+  "ninja": {
+   "evasion": {
+    "src": [
+     "Himself, Mix Tape: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "C"
+    }
+   },
+   "crit_dmg": {
+    "src": [
+     "Himself, Mix Tape: 5% × 3s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 2.5,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Pocket Shurikens: 5%",
+     "Himself, Sharpened Stars: 1% × 1s after a trigger 0.5"
+    ],
+    "self": {
+     "v": 5.5,
+     "g": "D"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Turbo Team: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Teammates, Turbo Team: 5% × 4 stacks × 4s after a trigger 0.5 × nearby Dudes 0.6"
+    ],
+    "team": {
+     "v": 6,
+     "g": "E"
+    }
+   }
+  },
+  "assassin": {
+   "max_hp": {
+    "src": [
+     "Himself, Plague Mask: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "D"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Scorpion Stinger: 30%"
+    ],
+    "self": {
+     "v": 30,
+     "g": "E"
+    }
+   },
+   "evasion": {
+    "src": [
+     "Himself, Wrist Blade: 10%"
+    ],
+    "self": {
+     "v": 10,
+     "g": "D"
+    }
+   }
+  },
+  "warlock": {
+   "crit": {
+    "src": [
+     "Teammates, Pocket Obelisk: 10% × 3s after a trigger 0.5 × nearby Dudes 0.6",
+     "Himself, Shadowy Funnel: 5%"
+    ],
+    "self": {
+     "v": 5,
+     "g": "D"
+    },
+    "team": {
+     "v": 3,
+     "g": "F"
+    }
+   },
+   "lifesteal": {
+    "src": [
+     "Himself, Uncanny Ledger: 15%"
+    ],
+    "self": {
+     "v": 15,
+     "g": "S"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Uncanny Ledger: 1% × rest of battle 0.7"
+    ],
+    "self": {
+     "v": 0.7,
+     "g": "F"
+    }
+   },
+   "max_hp": {
+    "src": [
+     "Himself, Velvet Robe: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Void Amethyst: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   }
+  },
+  "lich": {
+   "max_hp": {
+    "src": [
+     "Himself, Scales of Death: 30%",
+     "Himself, Scythe: 30%"
+    ],
+    "self": {
+     "v": 60,
+     "g": "A"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Teammates, Scythe: 5% × 4 stacks × on his Thralls × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 8,
+     "g": "F"
+    }
+   },
+   "crit": {
+    "src": [
+     "Teammates, Scythe: 1% × 4 stacks × on his Thralls × a few Dudes 0.4"
+    ],
+    "team": {
+     "v": 1.6,
+     "g": "F"
+    }
+   }
+  },
+  "trooper": {
+   "max_hp": {
+    "src": [
+     "Himself, Shock Helmet: 20%"
+    ],
+    "self": {
+     "v": 20,
+     "g": "E"
+    }
+   },
+   "toughness": {
+    "src": [
+     "Himself, Shock Helmet: 10% × 10s per Orbital Strike (every 10s)"
+    ],
+    "self": {
+     "v": 10,
+     "g": "E"
+    }
+   },
+   "atk_pow": {
+    "src": [
+     "Himself, Supply Drop: 5% × 5 stacks × 5s per Orbital Strike (every 10s)",
+     "Teammates, Supply Drop: 5% × 5 stacks × 5s per Orbital Strike (every 10s) × all Dudes"
+    ],
+    "self": {
+     "v": 12.5,
+     "g": "F"
+    },
+    "team": {
+     "v": 12.5,
+     "g": "E"
+    }
+   },
+   "atk_spd": {
+    "src": [
+     "Himself, Supply Drop: 2% × 5 stacks × 5s per Orbital Strike (every 10s)",
+     "Teammates, Supply Drop: 2% × 5 stacks × 5s per Orbital Strike (every 10s) × all Dudes"
+    ],
+    "self": {
+     "v": 5,
+     "g": "F"
+    },
+    "team": {
+     "v": 5,
+     "g": "E"
+    }
+   },
+   "crit": {
+    "src": [
+     "Himself, Supply Drop: 1% × 5 stacks × 5s per Orbital Strike (every 10s)",
+     "Teammates, Supply Drop: 1% × 5 stacks × 5s per Orbital Strike (every 10s) × all Dudes"
+    ],
+    "self": {
+     "v": 2.5,
+     "g": "F"
+    },
+    "team": {
+     "v": 2.5,
+     "g": "F"
+    }
+   }
+  }
+ }
+}

@@ -1,6 +1,21 @@
 import { dudeById, families, relicById, relics, statNum, type Dude, type Relic } from '../data/game';
-import { CHART_DUDES, cellOf, familyCells, focusScore, givesToTeam, RELIC_GIVES, scales, selfScaling, type Cell } from '../data/chart';
-import type { Comp, Entry } from './comp';
+import {
+  CHART_DUDES,
+  cellOf,
+  columnById,
+  familyCells,
+  focusScore,
+  givesToTeam,
+  gradeInfo,
+  gradeOf,
+  gradeWeight,
+  healStrength,
+  RELIC_GIVES,
+  scales,
+  selfScaling,
+  type Cell,
+} from '../data/chart';
+import { MAX_TYPES, type Comp, type Entry } from './comp';
 
 const relicIdByName = new Map(relics.map((r) => [r.name, r.id]));
 const rid = (name: string) => relicIdByName.get(name) ?? name;
@@ -51,7 +66,7 @@ export interface FocusLine {
   relics: string[];
   /** Dudes not on the Roster that scale with it, most self-scaling first. */
   anchors: string[];
-  /** Dudes not on the Roster that give it to others, best (Y) first. */
+  /** Dudes not on the Roster that give it to others, strongest first (Y over G, then grade). */
   suggestions: string[];
 }
 
@@ -62,9 +77,20 @@ export interface HealerCheck {
   suggestions: string[];
 }
 
+/** A Dude to fill an open Roster slot, ranked over all focus stats together. */
+export interface TeamPick {
+  dude: string;
+  score: number;
+  reasons: string[];
+}
+
 export interface Analysis {
   focusLines: FocusLine[];
   healer: HealerCheck;
+  /** Best Dudes for the open Roster slots (empty without focus stats or open slots). */
+  fill: TeamPick[];
+  /** Dude Types you can still add (MAX_TYPES minus non-Regular types on the Roster). */
+  openSlots: number;
   links: Link[];
   notes: Map<string, Note[]>;
   familyCounts: { id: string; dudes: number; types: number }[];
@@ -242,13 +268,14 @@ export function analyse(comp: Comp): Analysis {
 
   const types = roster.map((e) => e.dude);
   const focusLines = focusLineup(types, comp.focus, comp.relics);
-  const healer = healerCheck(types);
+  const healer = healerCheck(types, comp.focus);
+  const fill = fillTeam(types, comp.focus, healer.healers.length > 0);
+  const openSlots = Math.max(0, MAX_TYPES - new Set(types.filter((d) => d !== 'basic')).size);
 
-  return { focusLines, healer, links, notes, familyCounts, teamSynergies, roles, totalDudes, totalHp, totalDps, relevantRelics };
+  return { focusLines, healer, fill, openSlots, links, notes, familyCounts, teamSynergies, roles, totalDudes, totalHp, totalDps, relevantRelics };
 }
 
-/** Y beats G: a Dude that only buffs others is the stronger teammate for that stat. */
-/** Stronger givers first: Y (3) or G (2), times the spreadsheet grade. */
+/** Stronger givers first: Y (3) or G (2), times the estimated grade. */
 const byCellStrength = (col: string) => (a: string, b: string) => focusScore(b, [col]) - focusScore(a, [col]);
 
 /** For each focus stat: who scales with it, and who (Dudes, Families, planned Relics) gives it. */
@@ -270,14 +297,95 @@ export function focusLineup(types: string[], focus: string[], plannedRelics: str
   });
 }
 
-/** Step 3 of the method: make sure someone heals the other Dude Types. */
-export function healerCheck(types: string[]): HealerCheck {
+/** How much a Dude gives the focus stats to the team (Y 3, G 2, times grade). */
+const giveFit = (dude: string, focus: string[]) =>
+  focus.reduce((sum, col) => sum + (givesToTeam(cellOf(dude, col)) ? focusScore(dude, [col]) : 0), 0);
+
+/** Healing weight: up to 4 for the best healer by estimated HP/s (colour doesn't matter for healing). */
+const HEAL_SCORE = 4;
+
+/** Step 3 of the method: make sure someone heals the other Dude Types. Ranked by estimated HP/s, plus focus-stat giving. */
+export function healerCheck(types: string[], focus: string[] = []): HealerCheck {
   const unique = [...new Set(types)];
   const healers = unique.filter((d) => givesToTeam(cellOf(d, 'heal')));
+  const strength = (d: string) => HEAL_SCORE * healStrength(d) + giveFit(d, focus);
   const suggestions = healers.length
     ? []
-    : CHART_DUDES.filter((d) => givesToTeam(cellOf(d, 'heal'))).sort(byCellStrength('heal'));
+    : CHART_DUDES.filter((d) => givesToTeam(cellOf(d, 'heal'))).sort((a, b) => strength(b) - strength(a));
   return { healers, suggestions };
+}
+
+/** "Atk Pow (Y, S)": the column with the cell's colour (yellow only) and grade. */
+function cellTag(dude: string, col: string) {
+  const extra = [cellOf(dude, col) === 'Y' ? 'yellow' : '', gradeOf(dude, col) ?? ''].filter(Boolean).join(', ');
+  const short = columnById.get(col)!.short;
+  return extra ? `${short} (${extra})` : short;
+}
+
+interface FillState {
+  /** Givers per focus stat so far (Roster + picks): each extra giver of a covered stat counts half. */
+  givers: Map<string, number>;
+  /** Focus stats someone already scales with. */
+  scaled: Set<string>;
+  hasHealer: boolean;
+}
+
+function pickFor(dude: string, focus: string[], st: FillState): TeamPick {
+  let score = 0;
+  const gives: string[] = [];
+  const scalesWith: string[] = [];
+  for (const col of focus) {
+    const c = cellOf(dude, col);
+    if (givesToTeam(c)) {
+      score += focusScore(dude, [col]) * 0.5 ** (st.givers.get(col) ?? 0);
+      gives.push(cellTag(dude, col));
+    } else if (scales(c) && !st.scaled.has(col)) {
+      score += gradeWeight(dude, col);
+      scalesWith.push(cellTag(dude, col));
+    }
+  }
+  const reasons: string[] = [];
+  if (gives.length) reasons.push(`Gives ${gives.join(', ')}`);
+  if (!st.hasHealer && givesToTeam(cellOf(dude, 'heal'))) {
+    score += HEAL_SCORE * healStrength(dude);
+    const hps = gradeInfo(dude, 'heal');
+    reasons.push(hps ? `Heals the team (${hps.grade}, ~${Math.round(hps.value)} HP/s)` : 'Heals the team');
+  }
+  if (scalesWith.length) reasons.push(`Scales with ${scalesWith.join(', ')}`);
+  return { dude, score, reasons };
+}
+
+/**
+ * Fill the open Roster slots: pick Dudes not on the Roster one at a time, scored across all focus stats together.
+ * Giving a focus stat counts most, halved for each Dude already giving it (so picks spread over the stats);
+ * scaling with one counts only while no one does yet; healing counts until there's a healer.
+ */
+export function fillTeam(types: string[], focus: string[], hasHealer: boolean): TeamPick[] {
+  const unique = new Set(types);
+  const open = MAX_TYPES - [...unique].filter((d) => d !== 'basic').length;
+  if (open <= 0 || !focus.length) return [];
+  const st: FillState = {
+    givers: new Map(focus.map((col) => [col, [...unique].filter((d) => givesToTeam(cellOf(d, col))).length])),
+    scaled: new Set(focus.filter((col) => [...unique].some((d) => scales(cellOf(d, col))))),
+    hasHealer,
+  };
+  const pool = CHART_DUDES.filter((d) => !unique.has(d));
+  const picks: TeamPick[] = [];
+  while (picks.length < Math.min(6, open + 2)) {
+    const best = pool
+      .filter((d) => !picks.some((p) => p.dude === d))
+      .map((d) => pickFor(d, focus, st))
+      .reduce<TeamPick | undefined>((top, p) => (p.score > (top?.score ?? 0) ? p : top), undefined);
+    if (!best) break;
+    picks.push(best);
+    for (const col of focus) {
+      const c = cellOf(best.dude, col);
+      if (givesToTeam(c)) st.givers.set(col, (st.givers.get(col) ?? 0) + 1);
+      else if (scales(c)) st.scaled.add(col);
+    }
+    if (givesToTeam(cellOf(best.dude, 'heal'))) st.hasHealer = true;
+  }
+  return picks;
 }
 
 export function relicRelevant(r: Relic, types: Set<string>, fams: Set<string>) {
