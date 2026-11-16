@@ -32,6 +32,7 @@ import { ChartView } from './components/ChartView';
 import { FlyerBar, RunStart } from './components/FlyerBar';
 import { RelicStash } from './components/RelicStash';
 import { RelicsPanel } from './components/RelicsPanel';
+import { VersionButton } from './components/Changelog';
 import { ratioPlan } from './lib/ratio';
 import { teamStats } from './lib/stats';
 
@@ -263,7 +264,7 @@ export default function App() {
               <a href={SOURCE} target="_blank" rel="noreferrer">
                 official Dudex
               </a>
-              , {SCRAPED_AT}
+              , {SCRAPED_AT} · <VersionButton />
             </p>
           </div>
         </div>

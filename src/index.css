@@ -2673,3 +2673,68 @@ fieldset.stepper {
   align-self: flex-start;
   margin-bottom: 8px;
 }
+
+/* ---------- Version and changelog ---------- */
+
+.version-btn {
+  font-size: inherit;
+}
+
+/* The modal leaves padding to its content: pad it, and scroll the list inside the dialog. */
+.changelog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 4px 20px 20px;
+  overflow-y: auto;
+}
+
+.changelog > p {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-s);
+  background: var(--paper);
+}
+
+.releases {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.releases > li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.releases > li:last-child {
+  border-bottom: 0;
+}
+
+.releases h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--display);
+  font-size: 16px;
+}
+
+.release-title {
+  margin: 2px 0 6px;
+  font-weight: 700;
+}
+
+.releases ul {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
