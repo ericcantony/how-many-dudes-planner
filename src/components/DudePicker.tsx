@@ -9,11 +9,13 @@ interface Props {
   /** The Roster already has the maximum number of Dude Types. */
   full: boolean;
   onAdd: (dudeId: string) => void;
+  /** Set the focus stats to this Dude's strongest ones. */
+  onBuildAround: (dudeId: string) => void;
 }
 
 type Sort = 'default' | 'fit' | 'anchor';
 
-export function DudePicker({ counts, focus, full, onAdd }: Readonly<Props>) {
+export function DudePicker({ counts, focus, full, onAdd, onBuildAround }: Readonly<Props>) {
   const [query, setQuery] = useState('');
   const [family, setFamily] = useState<string>('all');
   const [preview, setPreview] = useState<Dude | null>(null);
@@ -127,6 +129,9 @@ export function DudePicker({ counts, focus, full, onAdd }: Readonly<Props>) {
               <FamilyTag id={preview.family} />
             </div>
           </header>
+          <button className="btn small" onClick={() => onBuildAround(preview.id)}>
+            Build around {preview.name}
+          </button>
           <p className="ability">
             <strong>{preview.ability.name}.</strong> <Desc tokens={preview.ability.desc} />
           </p>

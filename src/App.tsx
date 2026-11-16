@@ -26,7 +26,7 @@ import {
   MAX_TYPES,
 } from './lib/comp';
 import { analyse } from './lib/synergy';
-import { RELIC_GIVES } from './data/chart';
+import { anchorFocus, RELIC_GIVES } from './data/chart';
 import { CREDITS } from './credits';
 import { ChartView } from './components/ChartView';
 import { FlyerBar, RunStart } from './components/FlyerBar';
@@ -86,6 +86,20 @@ export default function App() {
 
   const patch = (p: Partial<Comp>) => setComp((c) => ({ ...c, ...p }));
 
+  /** Focus stats picked for you from a Dude ("build around him"); the note shows while they're unchanged. */
+  const [autoFocus, setAutoFocus] = useState<{ dude: string; cols: string[] } | null>(null);
+  const buildAround = (id: string) => {
+    const cols = anchorFocus(id);
+    if (!cols.length) return;
+    patch({ focus: cols });
+    setAutoFocus({ dude: id, cols });
+  };
+  /** The first non-Regular Dude on a comp without focus stats sets them (never overrides stats you picked). */
+  const autoFocusFor = (id: string) => {
+    if (id === 'basic' || comp.focus.length > 0 || countedTypes(comp.roster) > 0) return;
+    buildAround(id);
+  };
+
   const addDude = (id: string) => {
     if (!canAddType(comp.roster, id)) {
       flash(`Your Roster is full: Regular Dude plus ${MAX_TYPES} other types. Remove one to add another.`);
@@ -99,6 +113,7 @@ export default function App() {
       if (!canAddType(c.roster, id)) return c;
       return { ...c, roster: [...c.roster, { key: newKey(), dude: id, count: 1, trinket: null }] };
     });
+    autoFocusFor(id);
   };
 
   const toggleRelic = (id: string) =>
@@ -145,6 +160,7 @@ export default function App() {
         roster: add ? [...c.roster, { key: newKey(), dude: id, count: 1, trinket: null }] : c.roster,
       };
     });
+    if (fits) autoFocusFor(id);
   };
 
   const undoFlyer = () =>
@@ -231,6 +247,7 @@ export default function App() {
       onToggleFocus={toggleFocus}
       onFindRelics={setRelicStat}
       onAddDude={addDude}
+      autoFocus={autoFocus}
     />
   );
 
@@ -292,6 +309,7 @@ export default function App() {
             focus={comp.focus}
             full={countedTypes(comp.roster) >= MAX_TYPES}
             onAdd={addDude}
+            onBuildAround={buildAround}
           />
           <div className="center-col">
             {/* The Roster is what everyone uses, so it leads; run tracking, recruit plan and relic stash are optional helpers. */}
@@ -316,6 +334,7 @@ export default function App() {
               }
               onResetTargets={() => patch({ targets: {} })}
               onProjected={(n) => patch({ projected: clampProjected(n) })}
+              onBuildAround={buildAround}
             />
             {runPanel}
             {comp.roster.length > 0 && (

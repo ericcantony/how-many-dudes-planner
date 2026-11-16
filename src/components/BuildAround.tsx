@@ -9,6 +9,7 @@ interface Props {
   onToggleFocus: (col: string) => void;
   onFindRelics: (col: string) => void;
   onAddDude: (id: string) => void;
+  autoFocus: { dude: string; cols: string[] } | null;
 }
 
 const GROUPS: { id: ColGroup; label: string }[] = [
@@ -159,7 +160,18 @@ function FillTeam({
   );
 }
 
-export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, onAddDude }: Readonly<Props>) {
+/** "Focus set from Psionic Dude's strongest stats: …", while the focus is still exactly what was picked for you. */
+function AutoFocusNote({ auto, focus }: Readonly<{ auto: { dude: string; cols: string[] } | null; focus: string[] }>) {
+  if (!auto || auto.cols.length !== focus.length || !auto.cols.every((c) => focus.includes(c))) return null;
+  const names = auto.cols.map((c) => columnById.get(c)!.label).join(', ');
+  return (
+    <p className="auto-focus">
+      Focus set from <strong>{dudeById.get(auto.dude)!.name}</strong>’s strongest stats: {names}. Change them any time.
+    </p>
+  );
+}
+
+export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, onAddDude, autoFocus }: Readonly<Props>) {
   return (
     <section className="build" aria-labelledby="build-title">
       <h3 id="build-title">Build around</h3>
@@ -178,6 +190,8 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
           ))}
         </fieldset>
       ))}
+
+      <AutoFocusNote auto={autoFocus} focus={focus} />
 
       {focus.length > 0 && (
         <ul className="lineup">

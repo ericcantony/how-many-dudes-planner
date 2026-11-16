@@ -2657,3 +2657,19 @@ fieldset.stepper {
 .tip-scale .current b {
   color: var(--ink);
 }
+
+/* "Focus set from X's strongest stats" note in Build around. */
+.auto-focus {
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border-radius: var(--radius-s);
+  background: var(--paper);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.preview > .btn.small,
+.row-detail > .btn.small {
+  align-self: flex-start;
+  margin-bottom: 8px;
+}

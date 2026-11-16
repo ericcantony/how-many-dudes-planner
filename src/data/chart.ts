@@ -272,6 +272,31 @@ export const gradeWeight = (key: string, col: string) => {
   return gradable ? UNKNOWN_WEIGHT : 1;
 };
 
+/** Stats worth anchoring a team on: real combat % stats (not Healing, Revive, Summon, Dash, Taunt, Temp HP or Run Speed). */
+const ANCHOR_COLUMNS = COLUMNS.filter((c) => c.relicTerm && !['temp_hp', 'run_spd'].includes(c.id) && c.group !== 'enemy');
+
+/**
+ * How much a Dude is "about" a stat, for building a team around him: what he gets himself counts (blue cells, and
+ * green cells that include himself), as does dark blue (scales with it). Uses the better of his self and team grades.
+ */
+function anchorScore(dudeId: string, col: string) {
+  const cell = cellOf(dudeId, col);
+  if (!cell || cell === 'R') return 0;
+  if (cell === 'D') return 1;
+  const g = GRADES.rows[dudeId]?.[col];
+  const grades = [g?.self?.g, g?.team?.g].filter((x): x is ChartGrade => !!x).map((x) => GRADE_WEIGHT[x]);
+  return grades.length ? Math.max(...grades) : UNKNOWN_WEIGHT;
+}
+
+/** The 2–3 focus stats to build around this Dude: his strongest stats, best first (ties keep the chart order). */
+export function anchorFocus(dudeId: string, max = 3): string[] {
+  const scored = ANCHOR_COLUMNS.map((c) => ({ id: c.id, s: anchorScore(dudeId, c.id) })).filter((x) => x.s > 0);
+  return scored
+    .toSorted((a, b) => b.s - a.s)
+    .slice(0, max)
+    .map((x) => x.id);
+}
+
 /** Self-scaling cells (B or D): Dudes with many are good anchors to build around. */
 export const selfScaling = (dudeId: string) => [...(parsed.get(dudeId)?.values() ?? [])].filter(scales).length;
 

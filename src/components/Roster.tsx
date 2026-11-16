@@ -40,6 +40,8 @@ interface Props {
   onTarget: (dude: string, pct: number | null) => void;
   onResetTargets: () => void;
   onProjected: (n: number) => void;
+  /** Set the focus stats to this Dude's strongest ones. */
+  onBuildAround: (dude: string) => void;
 }
 
 const wide = { gutter: 60, lane: 14 };
@@ -71,6 +73,7 @@ export function Roster({
   onTarget,
   onResetTargets,
   onProjected,
+  onBuildAround,
 }: Readonly<Props>) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -173,6 +176,7 @@ export function Roster({
                   recruited={plan.total}
                   customPct={targets[e.dude]}
                   onTarget={(pct) => onTarget(e.dude, pct)}
+                  onBuildAround={() => onBuildAround(e.dude)}
                   stats={stats.get(e.key) ?? null}
                   plannedRelics={plannedRelics}
                   onToggle={() =>
@@ -507,6 +511,7 @@ interface RowProps {
   /** This type's hand-set target %, if any. */
   customPct: number | undefined;
   onTarget: (pct: number | null) => void;
+  onBuildAround: () => void;
   /** Stats with calculated buffs, as the game panel shows them. */
   stats: EntryStats | null;
   onToggle: () => void;
@@ -638,6 +643,11 @@ function Row(p: Readonly<RowProps>) {
 
       {p.expanded && (
         <div className="row-detail">
+          {dude.id !== 'basic' && (
+            <button className="btn small" onClick={p.onBuildAround}>
+              Build around {dude.name}
+            </button>
+          )}
           <p className="ability">
             <strong>{dude.ability.name}.</strong> <Desc tokens={dude.ability.desc} />{' '}
             <a href={wikiUrl(dude.id)} target="_blank" rel="noreferrer">
