@@ -22,9 +22,20 @@ export interface Release {
 /** Newest first. */
 export const CHANGELOG: Release[] = [
   {
-    minor: 20,
+    minor: 21,
     date: '2026-11-16',
     commit: '',
+    title: 'Clearer “build around your first Dude”',
+    items: [
+      'Adding your first Dude always sets the focus stats to his strongest ones, even if old focus stats were left over from an earlier comp.',
+      'If that replaced stats you had, “Undo” in Build around brings them back.',
+      'A message confirms the change, e.g. “Building around Psionic Dude: focus set to Max HP, Deflection, Toughness”.',
+    ],
+  },
+  {
+    minor: 20,
+    date: '2026-11-16',
+    commit: 'a64c408',
     title: 'Version number and changelog',
     items: [
       'The version shows in the header; click it for this changelog.',

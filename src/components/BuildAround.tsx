@@ -9,7 +9,8 @@ interface Props {
   onToggleFocus: (col: string) => void;
   onFindRelics: (col: string) => void;
   onAddDude: (id: string) => void;
-  autoFocus: { dude: string; cols: string[] } | null;
+  autoFocus: { dude: string; cols: string[]; previous: string[] } | null;
+  onUndoAutoFocus: () => void;
 }
 
 const GROUPS: { id: ColGroup; label: string }[] = [
@@ -160,18 +161,40 @@ function FillTeam({
   );
 }
 
-/** "Focus set from Psionic Dude's strongest stats: …", while the focus is still exactly what was picked for you. */
-function AutoFocusNote({ auto, focus }: Readonly<{ auto: { dude: string; cols: string[] } | null; focus: string[] }>) {
+const labels = (cols: string[]) => cols.map((c) => columnById.get(c)!.label).join(', ');
+
+/** "Built around Psionic Dude: …", while the focus is still exactly what was picked, with Undo to the stats it replaced. */
+function AutoFocusNote({
+  auto,
+  focus,
+  onUndo,
+}: Readonly<{ auto: { dude: string; cols: string[]; previous: string[] } | null; focus: string[]; onUndo: () => void }>) {
   if (!auto || auto.cols.length !== focus.length || !auto.cols.every((c) => focus.includes(c))) return null;
-  const names = auto.cols.map((c) => columnById.get(c)!.label).join(', ');
   return (
     <p className="auto-focus">
-      Focus set from <strong>{dudeById.get(auto.dude)!.name}</strong>’s strongest stats: {names}. Change them any time.
+      Built around <strong>{dudeById.get(auto.dude)!.name}</strong>: focus set to his strongest stats, {labels(auto.cols)}.
+      Change them any time.
+      {auto.previous.length > 0 && (
+        <>
+          {' '}
+          <button className="link" onClick={onUndo}>
+            Undo (back to {labels(auto.previous)})
+          </button>
+        </>
+      )}
     </p>
   );
 }
 
-export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, onAddDude, autoFocus }: Readonly<Props>) {
+export function BuildAround({
+  analysis: a,
+  focus,
+  onToggleFocus,
+  onFindRelics,
+  onAddDude,
+  autoFocus,
+  onUndoAutoFocus,
+}: Readonly<Props>) {
   return (
     <section className="build" aria-labelledby="build-title">
       <h3 id="build-title">Build around</h3>
@@ -191,7 +214,7 @@ export function BuildAround({ analysis: a, focus, onToggleFocus, onFindRelics, o
         </fieldset>
       ))}
 
-      <AutoFocusNote auto={autoFocus} focus={focus} />
+      <AutoFocusNote auto={autoFocus} focus={focus} onUndo={onUndoAutoFocus} />
 
       {focus.length > 0 && (
         <ul className="lineup">

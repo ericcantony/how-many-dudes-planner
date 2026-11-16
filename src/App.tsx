@@ -26,7 +26,7 @@ import {
   MAX_TYPES,
 } from './lib/comp';
 import { analyse } from './lib/synergy';
-import { anchorFocus, RELIC_GIVES } from './data/chart';
+import { anchorFocus, columnById, RELIC_GIVES } from './data/chart';
 import { CREDITS } from './credits';
 import { ChartView } from './components/ChartView';
 import { FlyerBar, RunStart } from './components/FlyerBar';
@@ -87,17 +87,28 @@ export default function App() {
 
   const patch = (p: Partial<Comp>) => setComp((c) => ({ ...c, ...p }));
 
-  /** Focus stats picked for you from a Dude ("build around him"); the note shows while they're unchanged. */
-  const [autoFocus, setAutoFocus] = useState<{ dude: string; cols: string[] } | null>(null);
+  /**
+   * Focus stats picked for you from a Dude ("build around him"). The note in Build around shows while they're
+   * unchanged, with Undo back to `previous` when it replaced stats you had.
+   */
+  const [autoFocus, setAutoFocus] = useState<{ dude: string; cols: string[]; previous: string[] } | null>(null);
   const buildAround = (id: string) => {
     const cols = anchorFocus(id);
     if (!cols.length) return;
+    const previous = comp.focus.filter((c) => !cols.includes(c)).length ? comp.focus : [];
     patch({ focus: cols });
-    setAutoFocus({ dude: id, cols });
+    setAutoFocus({ dude: id, cols, previous });
+    const names = cols.map((c) => columnById.get(c)?.label ?? c).join(', ');
+    flash(`Building around ${dudeById.get(id)?.name ?? id}: focus set to ${names}`);
   };
-  /** The first non-Regular Dude on a comp without focus stats sets them (never overrides stats you picked). */
+  const undoBuildAround = () => {
+    if (!autoFocus) return;
+    patch({ focus: autoFocus.previous });
+    setAutoFocus(null);
+  };
+  /** The first non-Regular Dude on the Roster always sets the focus stats (Undo brings back any you had). */
   const autoFocusFor = (id: string) => {
-    if (id === 'basic' || comp.focus.length > 0 || countedTypes(comp.roster) > 0) return;
+    if (id === 'basic' || countedTypes(comp.roster) > 0) return;
     buildAround(id);
   };
 
@@ -249,6 +260,7 @@ export default function App() {
       onFindRelics={setRelicStat}
       onAddDude={addDude}
       autoFocus={autoFocus}
+      onUndoAutoFocus={undoBuildAround}
     />
   );
 

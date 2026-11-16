@@ -12,7 +12,8 @@ interface Props {
   onFindRelics: (col: string) => void;
   onAddDude: (id: string) => void;
   /** Focus stats picked from a Dude, for the "Focus set from X" note. */
-  autoFocus: { dude: string; cols: string[] } | null;
+  autoFocus: { dude: string; cols: string[]; previous: string[] } | null;
+  onUndoAutoFocus: () => void;
 }
 
 const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -26,6 +27,7 @@ export function AnalysisPanel({
   onFindRelics,
   onAddDude,
   autoFocus,
+  onUndoAutoFocus,
 }: Readonly<Props>) {
   const maxFam = Math.max(1, ...a.familyCounts.map((f) => f.dudes));
 
@@ -60,6 +62,7 @@ export function AnalysisPanel({
         onFindRelics={onFindRelics}
         onAddDude={onAddDude}
         autoFocus={autoFocus}
+        onUndoAutoFocus={onUndoAutoFocus}
       />
 
       <h3>Families</h3>
