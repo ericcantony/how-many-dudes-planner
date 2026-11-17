@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { dudeById, familyById, relicById, relics } from '../data/game';
 import type { Comp } from '../lib/comp';
-import { gradeRelic, type RelicGrade } from '../lib/relicPick';
+import { GRADE_CLASS, gradeRelic, type RelicGrade } from '../lib/relicPick';
 import { GradeBadge, Desc, Sprite } from './bits';
 import { ItemPicker } from './ItemPicker';
+import { ReasonList } from './stashBits';
 
 interface Props {
   comp: Comp;
@@ -14,20 +15,6 @@ interface Props {
 }
 
 const SLOTS = [0, 1, 2];
-
-const GRADE_CLASS: Record<string, string> = { '++': 'g-great', '+': 'g-good', '0': 'g-ok', '−': 'g-weak' };
-
-function reasonClass(delta: number) {
-  if (delta > 0) return 'pro';
-  if (delta < 0) return 'con';
-  return 'note';
-}
-
-function reasonSign(delta: number) {
-  if (delta > 0) return '+';
-  if (delta < 0) return '−';
-  return '•';
-}
 
 function scopeLabel(id: string) {
   const r = relicById.get(id)!;
@@ -42,7 +29,7 @@ export function RelicStash({ comp, relevant, onTake }: Readonly<Props>) {
   const [choosing, setChoosing] = useState<number | null>(null);
 
   const grades = useMemo(() => offer.map((id) => gradeRelic(id, comp)), [offer, comp]);
-  const best = grades.length >= 2 ? grades.reduce((a, b) => (b.score > a.score ? b : a)) : null;
+  const best = grades.length >= 2 ? grades.reduce((a, b) => (b.score > a.score ? b : a), grades[0]) : null;
 
   const choose = (slot: number, id: string) =>
     setOffer((o) => {
@@ -133,16 +120,7 @@ function RelicCard({
         </div>
         <GradeBadge grade={g.grade} score={g.score} />
       </header>
-      <ul className="reasons">
-        {g.reasons.map((x) => (
-          <li key={x.text} className={reasonClass(x.delta)}>
-            <span className="sign" aria-hidden="true">
-              {reasonSign(x.delta)}
-            </span>
-            {x.text}
-          </li>
-        ))}
-      </ul>
+      <ReasonList reasons={g.reasons} />
       <details className="offer-chart">
         <summary>What it does</summary>
         <p className="small">

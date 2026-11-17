@@ -4,7 +4,7 @@ import { DudePicker } from './components/DudePicker';
 import { ItemPicker } from './components/ItemPicker';
 import { Roster } from './components/Roster';
 import { Modal, Sprite } from './components/bits';
-import { dudeById, relicById, relics, SCRAPED_AT, SOURCE, trinkets } from './data/game';
+import { dudeById, foodById, relicById, relics, SCRAPED_AT, SOURCE, trinketById, trinkets } from './data/game';
 import {
   compFromHash,
   decodeComp,
@@ -17,6 +17,7 @@ import {
   storeDraft,
   storeSaved,
   type Comp,
+  type Entry,
   type SavedComp,
   unlockedTypes,
   canAddType,
@@ -26,15 +27,18 @@ import {
   MAX_TYPES,
 } from './lib/comp';
 import { analyse } from './lib/synergy';
-import { anchorFocus, columnById, RELIC_GIVES } from './data/chart';
+import { anchorFocus, columnById, RELIC_GIVES, TRINKET_GIVES } from './data/chart';
+import { FOOD_GIVES, FOOD_ITEMS } from './data/food';
 import { CREDITS } from './credits';
 import { ChartView } from './components/ChartView';
 import { FlyerBar, RunStart } from './components/FlyerBar';
 import { RelicStash } from './components/RelicStash';
 import { RelicsPanel } from './components/RelicsPanel';
+import { FoodStash, TrinketStash } from './components/HolderStash';
 import { VersionButton } from './components/Changelog';
 import { ratioPlan } from './lib/ratio';
 import { teamStats } from './lib/stats';
+import { teamTotals } from './lib/relicPick';
 
 function initialComp(): Comp {
   return compFromHash() ?? loadDraft() ?? emptyComp();
@@ -48,6 +52,7 @@ export default function App() {
   const [relicStat, setRelicStat] = useState<string | null>(null);
   const [view, setView] = useState<'planner' | 'chart'>('planner');
   const [trinketFor, setTrinketFor] = useState<string | null>(null);
+  const [foodFor, setFoodFor] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [linkToCopy, setLinkToCopy] = useState<string | null>(null);
   const toastTimer = useRef<number>(0);
@@ -72,6 +77,7 @@ export default function App() {
     }
     return { ...analysis, totalHp, totalDps };
   }, [analysis, stats, comp.roster]);
+  const effective = useMemo(() => teamTotals(comp, stats), [comp, stats]);
   const planned = useMemo(() => new Set(comp.relics), [comp.relics]);
   const counts = useMemo(() => {
     const m = new Map<string, number>();
@@ -224,6 +230,10 @@ export default function App() {
   };
 
   const trinketEntry = comp.roster.find((e) => e.key === trinketFor);
+  const foodEntry = comp.roster.find((e) => e.key === foodFor);
+  const setEntry = (key: string, change: Partial<Entry>) =>
+    patch({ roster: comp.roster.map((e) => (e.key === key ? { ...e, ...change } : e)) });
+  const dudeNameOf = (key: string) => dudeById.get(comp.roster.find((e) => e.key === key)?.dude ?? '')?.name ?? 'your Dude';
 
 
   // Run tracking: the flyer bar during a run, the start card otherwise. Once every flyer is used (5 Dude Types),
@@ -253,6 +263,7 @@ export default function App() {
   const analysisPanel = (
     <AnalysisPanel
       analysis={shownAnalysis}
+      effective={effective}
       focus={comp.focus}
       notes={comp.notes}
       onNotes={(notes) => patch({ notes })}
@@ -271,13 +282,13 @@ export default function App() {
           <Sprite id="sp_icon_dude_regular" size={40} />
           <div>
             <h1>How Many Dudes? Comp Planner</h1>
-            <p className="muted small">
+            <div className="muted small brand-sub">
               Data from the{' '}
               <a href={SOURCE} target="_blank" rel="noreferrer">
                 official Dudex
               </a>
               , {SCRAPED_AT} · <VersionButton />
-            </p>
+            </div>
           </div>
         </div>
         <input
@@ -336,6 +347,7 @@ export default function App() {
               onChange={(roster) => patch({ roster })}
               onToggleRelic={toggleRelic}
               onPickTrinket={setTrinketFor}
+              onPickFood={setFoodFor}
               targets={comp.targets}
               onTarget={(dude, pct) =>
                 setComp((c) => {
@@ -367,6 +379,24 @@ export default function App() {
               onToggle={toggleRelic}
               onOpenPicker={() => setRelicStat('')}
             />
+            {comp.roster.length > 0 && (
+              <TrinketStash
+                comp={comp}
+                onTake={(id, key) => {
+                  setEntry(key, { trinket: id });
+                  flash(`Gave ${trinketById.get(id)?.name ?? 'Trinket'} to ${dudeNameOf(key)}`);
+                }}
+              />
+            )}
+            {comp.roster.length > 0 && (
+              <FoodStash
+                comp={comp}
+                onTake={(id, key, second) => {
+                  setEntry(key, { food: id, foodSecond: second });
+                  flash(`Gave ${foodById.get(id)?.name ?? 'the meal'} to ${dudeNameOf(key)}`);
+                }}
+              />
+            )}
           </div>
           {analysisPanel}
         </main>
@@ -395,12 +425,23 @@ export default function App() {
         open={!!trinketEntry}
         title="Choose a Trinket"
         items={trinkets}
+        gives={TRINKET_GIVES}
         selected={new Set(trinketEntry?.trinket ? [trinketEntry.trinket] : [])}
         multi={false}
         onPick={(id) =>
           patch({ roster: comp.roster.map((e) => (e.key === trinketFor ? { ...e, trinket: e.trinket === id ? null : id } : e)) })
         }
         onClose={() => setTrinketFor(null)}
+      />
+      <ItemPicker
+        open={!!foodEntry}
+        title="Choose a meal"
+        items={FOOD_ITEMS}
+        gives={FOOD_GIVES}
+        selected={new Set(foodEntry?.food ? [foodEntry.food] : [])}
+        multi={false}
+        onPick={(id) => foodEntry && setEntry(foodEntry.key, foodEntry.food === id ? { food: null, foodSecond: null } : { food: id, foodSecond: null })}
+        onClose={() => setFoodFor(null)}
       />
 
       <footer className="site-footer">

@@ -1,4 +1,4 @@
-import { dudeById, relics, type Relic, type Token } from './game';
+import { dudeById, relics, trinkets, type Token } from './game';
 import gradesJson from './grades.json';
 
 /**
@@ -347,17 +347,19 @@ function healsTeam(desc: Token[]) {
   return !mentionsEnemy && desc.some(([k, t]) => k === 'g' && (t === 'Heal' || t === 'Heals'));
 }
 
-/** Walk the tokens: after "gain(s)", each stat term in the list that follows is a stat the Relic gives. */
-function relicGives(r: Relic): string[] {
+/** Walk the tokens: after "gain(s)", each stat term in the list that follows is a stat the Relic or Trinket gives. */
+function descGives(desc: Token[]): string[] {
   const out = new Set<string>();
   const state: WalkState = { enemySentence: false, inGain: false };
-  for (const [kind, text] of r.desc) {
+  for (const [kind, text] of desc) {
     if (kind === 't') stepText(state, text);
     else if (kind === 'g' && state.inGain && TERM_TO_COL.has(text)) out.add(TERM_TO_COL.get(text)!);
   }
-  if (healsTeam(r.desc)) out.add('heal');
+  if (healsTeam(desc)) out.add('heal');
   return [...out];
 }
 
 /** Relic id → chart column ids it gives. */
-export const RELIC_GIVES = new Map(relics.map((r) => [r.id, relicGives(r)]));
+export const RELIC_GIVES = new Map(relics.map((r) => [r.id, descGives(r.desc)]));
+/** Trinket id → chart column ids it gives (to the Wielder, or the team for healing). */
+export const TRINKET_GIVES = new Map(trinkets.map((t) => [t.id, descGives(t.desc)]));

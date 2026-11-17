@@ -16,7 +16,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { dudeById, relicById, trinketById, wikiUrl } from '../data/game';
+import { dudeById, foodById, relicById, trinketById, wikiUrl, type Food } from '../data/game';
+import { FOOD_FIRST } from '../data/food';
+import { SecondStatSelect } from './stashBits';
 import { clampTarget, countedTypes, MAX_TYPES, type Entry } from '../lib/comp';
 import type { RatioPlan, TypeTarget } from '../lib/ratio';
 import type { Analysis, Link } from '../lib/synergy';
@@ -34,6 +36,7 @@ interface Props {
   onChange: (roster: Entry[]) => void;
   onToggleRelic: (id: string) => void;
   onPickTrinket: (entryKey: string) => void;
+  onPickFood: (entryKey: string) => void;
   /** Targets set by hand, in percent (Dude id → %). */
   targets: Record<string, number>;
   /** Set a type's target (null = back to automatic). */
@@ -69,6 +72,7 @@ export function Roster({
   onChange,
   onToggleRelic,
   onPickTrinket,
+  onPickFood,
   targets,
   onTarget,
   onResetTargets,
@@ -193,6 +197,9 @@ export function Roster({
                   onToggleRelic={onToggleRelic}
                   onPickTrinket={() => onPickTrinket(e.key)}
                   onClearTrinket={() => update(e.key, { trinket: null })}
+                  onPickFood={() => onPickFood(e.key)}
+                  onFoodSecond={(foodSecond) => update(e.key, { foodSecond })}
+                  onClearFood={() => update(e.key, { food: null, foodSecond: null })}
                 />
               ))}
             </ol>
@@ -521,12 +528,16 @@ interface RowProps {
   onToggleRelic: (id: string) => void;
   onPickTrinket: () => void;
   onClearTrinket: () => void;
+  onPickFood: () => void;
+  onFoodSecond: (col: string | null) => void;
+  onClearFood: () => void;
 }
 
 function Row(p: Readonly<RowProps>) {
   const { entry, index } = p;
   const dude = dudeById.get(entry.dude)!;
   const trinket = entry.trinket ? trinketById.get(entry.trinket) : null;
+  const food = entry.food ? foodById.get(entry.food) : null;
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: entry.key,
   });
@@ -599,6 +610,14 @@ function Row(p: Readonly<RowProps>) {
           {trinket ? <Sprite id={trinket.icon} size={32} alt={trinket.name} /> : <span aria-hidden="true">＋</span>}
           <span className="sr-only">{trinket ? `Trinket: ${trinket.name}. Change` : 'Choose a Trinket'}</span>
         </button>
+        <button
+          className={`trinket-slot food-slot${food ? ' filled' : ''}`}
+          onClick={p.onPickFood}
+          title={food ? `Meal: ${food.name}` : 'Choose a meal'}
+        >
+          {food ? <Sprite id={food.icon} size={32} alt={food.name} /> : <span aria-hidden="true">🍴</span>}
+          <span className="sr-only">{food ? `Meal: ${food.name}. Change` : 'Choose a meal'}</span>
+        </button>
 
         <div className="row-actions">
           <button className="btn icon ghost" onClick={() => p.onMove(-1)} disabled={index === 0} aria-label="Move up">
@@ -666,6 +685,7 @@ function Row(p: Readonly<RowProps>) {
               </p>
             </div>
           )}
+          {food && <FoodDetail food={food} second={entry.foodSecond ?? null} onSecond={p.onFoodSecond} onClear={p.onClearFood} />}
           {dude.relics.length > 0 && (
             <>
               <h4>{dude.name} Relics</h4>
@@ -693,5 +713,29 @@ function Row(p: Readonly<RowProps>) {
         </div>
       )}
     </li>
+  );
+}
+
+/** A Dude Type's meal: its stats (the second one is random, so you enter it) and a remove link. */
+function FoodDetail({
+  food,
+  second,
+  onSecond,
+  onClear,
+}: Readonly<{ food: Food; second: string | null; onSecond: (col: string | null) => void; onClear: () => void }>) {
+  const first = FOOD_FIRST[food.id];
+  return (
+    <div className="trinket-detail">
+      <Sprite id={food.icon} size={28} />
+      <p>
+        <strong>{food.name}.</strong> Gives {first ? `${first.value}% ` : ''}
+        {food.primary} and{' '}
+        <SecondStatSelect className="food-second" foodId={food.id} value={second} emptyLabel="a second stat (pick it)" onChange={onSecond} />
+        . Counted in his stats.{' '}
+        <button className="link" onClick={onClear}>
+          Remove meal
+        </button>
+      </p>
+    </div>
   );
 }

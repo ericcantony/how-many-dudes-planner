@@ -1,9 +1,10 @@
-import { dudeById, relicById, statNum, trinketById, type Token } from '../data/game';
+import { dudeById, foodById, relicById, statNum, trinketById, type Token } from '../data/game';
+import { foodStats } from '../data/food';
 import type { Comp, Entry } from './comp';
 
 /**
  * Per-Dude stats as the game panel shows them: base Dudex stats plus the buffs we can work out
- * from the Roster, planned Relics and Trinkets. In-battle, random and conditional effects
+ * from the Roster, planned Relics, Trinkets and meals. In-battle, random and conditional effects
  * ("When…", "for 3 seconds", "chance") are left out, so values are an estimate.
  */
 
@@ -13,11 +14,14 @@ export const SHOWN_STATS = [
   { key: 'dps', label: 'DPS', icon: 'sp_stat_dps' },
   { key: 'speed', label: 'Run Speed', icon: 'sp_stat_speed' },
   { key: 'crit_chance', label: 'Crit Chance', icon: 'sp_stat_critchance' },
+  // Bonus on top of a crit's base +100% (no Dude has any base Crit Damage); shown only when a Relic, Trinket or meal adds some.
+  { key: 'crit_damage', label: 'Crit Damage', icon: 'sp_stat_critdamage' },
   { key: 'evasion', label: 'Evasion', icon: 'sp_stat_evasion' },
   { key: 'toughness', label: 'Toughness', icon: 'sp_stat_toughness' },
   { key: 'deflection', label: 'Deflection', icon: 'sp_ui_staticon_deflection' },
   { key: 'block_chance', label: 'Block Chance', icon: 'sp_stat_block_chance' },
   { key: 'cleave', label: 'Cleave', icon: 'sp_stat_cleave' },
+  { key: 'multistrike', label: 'Multistrike', icon: 'sp_stat_multistrike' },
   { key: 'regeneration', label: 'Regeneration', icon: 'sp_stat_regeneration' },
   { key: 'lifesteal', label: 'Lifesteal', icon: 'sp_stat_lifesteal' },
 ] as const;
@@ -29,11 +33,13 @@ const TERM: Record<string, string> = {
   'Attack Speed': 'attack_speed',
   'Run Speed': 'speed',
   'Crit Chance': 'crit_chance',
+  'Crit Damage': 'crit_damage',
   Evasion: 'evasion',
   Toughness: 'toughness',
   Deflection: 'deflection',
   'Block Chance': 'block_chance',
   Cleave: 'cleave',
+  Multistrike: 'multistrike',
   Regeneration: 'regeneration',
   Lifesteal: 'lifesteal',
 };
@@ -120,7 +126,7 @@ function firstClause(desc: Token[]): Token[] {
     if (cut >= 0) {
       const rest = text.slice(cut + ', and'.length).trim();
       const next = sentence[i + 1];
-      const continuesList = rest === '' && next?.[0] === 'v' && /%$/.test(next[1]);
+      const continuesList = rest === '' && next?.[0] === 'v' && next[1].endsWith('%');
       if (!continuesList && !/^\[?\d/.test(rest)) {
         out.push(['t', text.slice(0, cut)]);
         return out;
@@ -329,7 +335,8 @@ export function slotLabel(rule: PositionRule): string {
   if (rule.slot === 'top') return 'at the top of your Roster';
   if (rule.slot === 'end') return 'at the end of your Roster';
   if (rule.slot === 'below') return `right below ${dudeById.get(rule.owner ?? '')?.name ?? 'its owner'}`;
-  return `${ORDINAL[rule.slot - 1] ?? `#${rule.slot}`} on your Roster`;
+  const ordinal = ORDINAL[rule.slot - 1] ?? `#${rule.slot}`;
+  return `${ordinal} on your Roster`;
 }
 
 /** Relics that reach neighbours on the Roster. */
@@ -378,6 +385,32 @@ function parsedMods(team: Team, comp: Comp) {
     const tr = e.trinket ? trinketById.get(e.trinket) : null;
     const b = tr ? parseBonus(tr.desc, team.types) : null;
     if (tr && b) applyParsed(team, b, tr.name, e);
+  }
+}
+
+/**
+ * Team Jersey (Trinket): the Wielder gains 1% of a stat per Wielder on your Roster, up to 40.
+ * Top of the Roster: Attack Power, bottom: Max HP, anywhere else: Multistrike.
+ */
+const JERSEY = 'r_team_jersey';
+
+function jerseyMods(team: Team) {
+  const last = team.roster.length - 1;
+  team.roster.forEach((e, i) => {
+    if (e.trinket !== JERSEY) return;
+    let stat = 'multistrike';
+    if (i === 0) stat = 'damage';
+    else if (i === last) stat = 'hpmax';
+    team.add(e, stat, Math.min(40, e.count), 'Team Jersey');
+  });
+}
+
+/** Meals: fixed amounts from data/food.ts, given to every copy of the Dude Type that eats it. */
+function mealMods(team: Team) {
+  for (const e of team.roster) {
+    const meal = e.food ? foodById.get(e.food) : null;
+    if (!meal) continue;
+    for (const s of foodStats(meal.id, e.foodSecond ?? null)) team.add(e, s.stat, s.value, meal.name);
   }
 }
 
@@ -483,7 +516,13 @@ export const TIMED_RULES: Record<string, TimedRule> = {
     note: 'Counted for the Trooper only; Dudes near the strike may also get it.',
   },
   'Knee Sleeve': { owner: 'basketball', ability: 'Dunk', targets: ['self'], mods: [{ stat: 'evasion', value: 5 }], uptime: 4 / 7, note: 'Counted for the Basketball Dude only; nearby Dudes may also get it.' },
-  'Tall Socks': { owner: 'basketball', ability: 'Dunk', targets: ['self'], mods: [{ stat: 'crit_chance', value: 1 }], uptime: 4 / 7, note: 'Counted for the Basketball Dude only; nearby Dudes may also get it.' },
+  'Tall Socks': { owner: 'basketball', ability: 'Dunk', targets: ['self'], mods: [
+      { stat: 'crit_chance', value: 1 },
+      { stat: 'multistrike', value: 4 },
+    ],
+    uptime: 4 / 7,
+    note: 'Counted for the Basketball Dude only; nearby Dudes may also get it.',
+  },
   Spurs: {
     owner: 'western',
     ability: 'Lasso',
@@ -524,20 +563,24 @@ export function timedTargetIssue(comp: Comp, relicName: string): string | null {
   return null;
 }
 
-function timedTargets(team: Team, rule: TimedRule, i: number): { entry: Entry; share: number }[] {
+type TimedTarget = { entry: Entry; share: number };
+
+/** "spread": one target at a time (per owner, unless the bonus already scales per owner), shared over every other Dude. */
+function spreadTargets(team: Team, rule: TimedRule): TimedTarget[] {
+  const others = team.roster.filter((e) => e.dude !== rule.owner);
+  const otherDudes = others.reduce((s, e) => s + e.count, 0);
+  const active = rule.perOwner ? 1 : team.countOf(rule.owner);
+  return others.map((e) => ({ entry: e, share: Math.min(1, active / Math.max(1, otherDudes)) }));
+}
+
+function timedTargets(team: Team, rule: TimedRule, i: number): TimedTarget[] {
   const { roster } = team;
-  const out: { entry: Entry; share: number }[] = [];
+  const out: TimedTarget[] = [];
   for (const t of rule.targets) {
     if (t === 'self') out.push({ entry: roster[i], share: 1 });
     if (t === 'below' && roster[i + 1]) out.push({ entry: roster[i + 1], share: 1 });
     if (t === 'above' && roster[i - 1]) out.push({ entry: roster[i - 1], share: 1 });
-    if (t === 'spread') {
-      const others = roster.filter((e) => e.dude !== rule.owner);
-      const otherDudes = others.reduce((s, e) => s + e.count, 0);
-      // One target at a time (per owner, unless the bonus already scales per owner), spread over every other Dude.
-      const active = rule.perOwner ? 1 : team.countOf(rule.owner);
-      for (const e of others) out.push({ entry: e, share: Math.min(1, active / Math.max(1, otherDudes)) });
-    }
+    if (t === 'spread') out.push(...spreadTargets(team, rule));
   }
   return out;
 }
@@ -561,6 +604,8 @@ export function teamStats(comp: Comp): Map<string, EntryStats> {
   rosterRelicMods(team);
   neighbourRelicMods(team);
   parsedMods(team, comp);
+  mealMods(team);
+  jerseyMods(team);
   timedMods(team);
 
   const out = new Map<string, EntryStats>();

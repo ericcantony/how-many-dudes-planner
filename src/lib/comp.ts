@@ -1,5 +1,6 @@
 import { columnById } from '../data/chart';
-import { dudeById, relicById, trinketById } from '../data/game';
+import { SECOND_CHOICES } from '../data/food';
+import { dudeById, foodById, relicById, trinketById } from '../data/game';
 
 /** One Dude Type on the roster. Order in the roster array is the in-game Roster order (top first). */
 export interface Entry {
@@ -8,6 +9,9 @@ export interface Entry {
   dude: string;
   count: number;
   trinket: string | null;
+  /** Chef meal this Dude Type eats (Food id), and its random second stat (chart column) once known. */
+  food?: string | null;
+  foodSecond?: string | null;
 }
 
 export interface Comp {
@@ -62,7 +66,7 @@ let keySeq = 0;
 export const newKey = () => `e${Date.now().toString(36)}${(keySeq++).toString(36)}`;
 
 // ---------- Sharing: compact, URL-safe encoding ----------
-// Format (before base64url): name \n notes \n dude*count~trinket,dude*count \n relic,relic \n focus,focus \n flyers \n run ("1" while tracking a run) \n projected total \n targets (dude:percent,dude:percent)
+// Format (before base64url): name \n notes \n dude*count~trinket,dude*count \n relic,relic \n focus,focus \n flyers \n run ("1" while tracking a run) \n projected total \n targets (dude:percent,dude:percent) \n food (per roster entry, in order: "food.second", empty when none)
 // Flyers: "offer1.offer2.offer3>pick" per round, comma-separated; an undecided round ends with ">".
 // Only ever append new fields so old links keep working.
 
@@ -108,18 +112,29 @@ function decodeTargets(text: string): Record<string, number> {
 
 export const clampTarget = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
 
+const foodCode = (e: Entry) => (e.food ? [e.food, e.foodSecond].filter(Boolean).join('.') : '');
+const encodeFood = (roster: Entry[]) => (roster.some((e) => e.food) ? roster.map(foodCode).join(',') : '');
+
+/** Food for roster part `i` (food is listed per part, so a skipped part keeps the rest aligned). */
+function decodeFood(parts: string[], i: number): Pick<Entry, 'food' | 'foodSecond'> {
+  const [food = '', second = ''] = (parts[i] ?? '').split('.');
+  if (!foodById.has(food)) return { food: null, foodSecond: null };
+  return { food, foodSecond: SECOND_CHOICES.has(second) ? second : null };
+}
+
 export function encodeComp(c: Comp): string {
   const roster = c.roster.map((e) => `${e.dude}*${e.count}${e.trinket ? `~${e.trinket}` : ''}`).join(',');
   const clean = (s: string) => s.replaceAll('\n', ' ');
-  const fields = [clean(c.name), clean(c.notes), roster, c.relics.join(','), c.focus.join(','), encodeFlyers(c.flyers), c.run ? '1' : '', String(c.projected), encodeTargets(c.targets)];
+  const fields = [clean(c.name), clean(c.notes), roster, c.relics.join(','), c.focus.join(','), encodeFlyers(c.flyers), c.run ? '1' : '', String(c.projected), encodeTargets(c.targets), encodeFood(c.roster)];
   return b64urlEncode(fields.join('\n'));
 }
 
 export function decodeComp(code: string): Comp | null {
   try {
-    const [name = '', notes = '', roster = '', relics = '', focus = '', flyers = '', run = '', projected = '', targets = ''] = b64urlDecode(code).split('\n');
+    const [name = '', notes = '', roster = '', relics = '', focus = '', flyers = '', run = '', projected = '', targets = '', food = ''] = b64urlDecode(code).split('\n');
     const entries: Entry[] = [];
-    for (const part of roster.split(',').filter(Boolean)) {
+    const foodParts = food.split(',');
+    for (const [i, part] of roster.split(',').filter(Boolean).entries()) {
       const m = /^([^*~]+)\*(\d+)(?:~(.+))?$/.exec(part);
       if (!m || !dudeById.has(m[1])) continue;
       entries.push({
@@ -127,6 +142,7 @@ export function decodeComp(code: string): Comp | null {
         dude: m[1],
         count: Math.max(1, Math.min(999, Number(m[2]))),
         trinket: m[3] && trinketById.has(m[3]) ? m[3] : null,
+        ...decodeFood(foodParts, i),
       });
     }
     return {

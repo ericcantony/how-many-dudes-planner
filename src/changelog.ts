@@ -22,9 +22,27 @@ export interface Release {
 /** Newest first. */
 export const CHANGELOG: Release[] = [
   {
+    minor: 22,
+    date: '2026-11-17',
+    commit: '',
+    title: 'Trinket and Food stash',
+    items: [
+      'New Trinket stash under Your Relics: enter the 3 Trinkets the game offers, and each is graded ++ / + / 0 / − like the Relic stash.',
+      'Each Trinket is tried on every Dude Type of your Roster, and the card says who should hold it (“Best on Tennis Dude”). Pick another holder from the list if you like.',
+      '“Give to X” puts it in that Dude Type’s Trinket slot, replacing his old one (the grade counts what he loses).',
+      'The Trinket picker can filter by stat, like the Relic picker.',
+      'Food stash: grades the 3 meals the game offers the same way, and each Roster row gets a meal slot next to the Trinket.',
+      'Meals count in the Roster stats and Team HP/DPS. Each meal has a fixed first stat (Red Curry: 20% Attack Speed) and a random second one you pick when you see it (e.g. 5% Crit Chance).',
+      'The Dudex lists no meal amounts, so they come from a player’s Steam guide. Tell us if a meal shows different numbers in your game.',
+      'Crit Damage now counts: a crit deals the hit + 100% + your Crit Damage (10 → 20, or 25 with 50% Crit Damage). Arsenal, Arcane Monocle and other Crit Damage Relics, Trinkets and meals grade better, most on high-crit Dudes. Roster rows show Crit Damage when something gives it.',
+      'Breakdown shows “Effective” Team HP and DPS under the plain totals: HP after Toughness, Evasion, Block and Deflection, DPS with Crits and Cleave. Hover for how they’re worked out; the stash grades use these.',
+      'Multistrike counts: shown on Roster rows when something gives it, and added to effective DPS like Cleave (every 100% is one extra hit). Team Jersey and Tall Socks now count in the stats.',
+    ],
+  },
+  {
     minor: 21,
     date: '2026-11-16',
-    commit: '',
+    commit: '225b97f',
     title: 'Clearer “build around your first Dude”',
     items: [
       'Adding your first Dude always sets the focus stats to his strongest ones, even if old focus stats were left over from an earlier comp.',

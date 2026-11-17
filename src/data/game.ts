@@ -41,6 +41,15 @@ export interface Trinket {
   desc: Token[];
 }
 
+/** A meal (Dudex "Food"), held by one Dude Type like a Trinket: always gives its Primary Stat, plus one random second stat. Amounts are in data/food.ts (the Dudex lists none). */
+export interface Food {
+  id: string;
+  name: string;
+  icon: string;
+  /** Stat name as the Dudex writes it, e.g. "Crit Chance". */
+  primary: string;
+}
+
 interface RawData {
   source: string;
   scrapedAt: string;
@@ -48,6 +57,7 @@ interface RawData {
   dudes: Omit<Dude, 'summon'>[];
   relics: Relic[];
   trinkets: Trinket[];
+  food: Food[];
 }
 
 const data = raw as unknown as RawData;
@@ -61,11 +71,13 @@ export const families = data.families;
 export const dudes: Dude[] = data.dudes.map((d) => ({ ...d, summon: SUMMONS.has(d.id) }));
 export const relics = data.relics;
 export const trinkets = data.trinkets;
+export const foods = data.food;
 
 export const familyById = new Map(families.map((f) => [f.id, f]));
 export const dudeById = new Map(dudes.map((d) => [d.id, d]));
 export const relicById = new Map(relics.map((r) => [r.id, r]));
 export const trinketById = new Map(trinkets.map((t) => [t.id, t]));
+export const foodById = new Map(foods.map((f) => [f.id, f]));
 
 export const sprite = (id: string) => `${import.meta.env.BASE_URL}sprites/${id}_0.webp`;
 export const wikiUrl = (slug: string) => `https://howmanydudes.com/en/dudex/${slug}`;

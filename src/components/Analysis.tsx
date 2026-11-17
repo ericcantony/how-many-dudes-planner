@@ -1,10 +1,13 @@
+import type { ReactNode } from 'react';
 import { dudeById, familyById } from '../data/game';
 import { ROLE_LABELS, type Analysis as A, type Role } from '../lib/synergy';
-import { Sprite } from './bits';
+import { Sprite, Tip } from './bits';
 import { BuildAround } from './BuildAround';
 
 interface Props {
   analysis: A;
+  /** Team HP and DPS after defence, crits and Cleave (teamTotals), shown under the plain sums. */
+  effective: { hp: number; dps: number };
   focus: string[];
   notes: string;
   onNotes: (s: string) => void;
@@ -18,8 +21,41 @@ interface Props {
 
 const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
+const HP_TIP = (
+  <>
+    <p className="tip-para">
+      <strong>Team HP</strong> is the Max HP of all your Dudes added up.
+    </p>
+    <p className="tip-para">
+      <strong>Effective</strong> is how much damage they can take: Max HP ÷ the share of damage that still lands after
+      Toughness, Evasion and Block. Deflection counts half, since it sends half the hit to an ally. Healing isn’t counted.
+    </p>
+  </>
+);
+const DPS_TIP = (
+  <>
+    <p className="tip-para">
+      <strong>Team DPS</strong> is Attack Power × Attack Speed of all your Dudes added up.
+    </p>
+    <p className="tip-para">
+      <strong>Effective</strong> adds Crits (a crit deals the hit + 100% + Crit Damage), Cleave and Multistrike. The Relic, Trinket
+      and Food stash grades use the effective numbers.
+    </p>
+  </>
+);
+
+/** "Effective 2,430" under a total, with a tooltip explaining it. */
+function Effective({ value, tip }: Readonly<{ value: number; tip: ReactNode }>) {
+  return (
+    <Tip as="p" className="effective" content={tip}>
+      Effective {fmt(value)}
+    </Tip>
+  );
+}
+
 export function AnalysisPanel({
   analysis: a,
+  effective,
   focus,
   notes,
   onNotes,
@@ -45,14 +81,16 @@ export function AnalysisPanel({
         <div>
           <dt>Team HP</dt>
           <dd>{fmt(Math.round(a.totalHp))}</dd>
+          <Effective value={Math.round(effective.hp)} tip={HP_TIP} />
         </div>
         <div>
           <dt>Team DPS</dt>
           <dd>{fmt(a.totalDps)}</dd>
+          <Effective value={effective.dps} tip={DPS_TIP} />
         </div>
       </dl>
       <p className="muted small">
-        Includes your Relics, Trinkets and Roster bonuses we can work out. In-battle effects aren’t counted.
+        Includes your Relics, Trinkets, meals and Roster bonuses we can work out. In-battle effects aren’t counted.
       </p>
 
       <BuildAround

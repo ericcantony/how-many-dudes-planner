@@ -21,6 +21,9 @@ export interface RelicGrade {
   hpGain: number;
 }
 
+/** Card colour per grade, shared by the Relic and Trinket stash. */
+export const GRADE_CLASS: Record<string, string> = { '++': 'g-great', '+': 'g-good', '0': 'g-ok', '−': 'g-weak' };
+
 const toGrade = (score: number): Grade => {
   if (score >= 4) return '++';
   if (score >= 1.5) return '+';
@@ -36,11 +39,11 @@ const list = (items: string[]) =>
  * Effective team survivability and damage from the same buffed stats the Roster rows show.
  * Survivability: HP divided by the share of damage that still lands after Toughness, Evasion and
  * Block (Deflection avoids the hit but sends half of it to an ally, so it counts half).
- * Damage: DPS with Crits counted as double damage and Cleave as extra hits.
+ * Damage: DPS with Crits (the hit + 100% + Crit Damage), and Cleave and Multistrike as extra hits.
  * These are rough models, good for comparing Relics, not exact in-game numbers.
+ * The Breakdown shows them as "effective" Team HP and DPS. Pass `stats` when you already have them.
  */
-function teamTotals(comp: Comp) {
-  const stats = teamStats(comp);
+export function teamTotals(comp: Comp, stats = teamStats(comp)) {
   let hp = 0;
   let dps = 0;
   for (const e of comp.roster) {
@@ -49,7 +52,10 @@ function teamTotals(comp: Comp) {
     const frac = (key: string) => Math.min(0.95, v(key) / 100);
     const landed = (1 - frac('toughness')) * (1 - frac('evasion')) * (1 - frac('block_chance')) * (1 - frac('deflection') / 2);
     hp += (v('hpmax') / Math.max(0.05, landed)) * e.count;
-    dps += v('dps') * (1 + frac('crit_chance')) * (1 + v('cleave') / 100) * e.count;
+    // A crit deals the hit + 100% + Crit Damage (user, 2026-11-16: 10 → 20 with 0% Crit Damage, → 25 with 50%).
+    const critBonus = 1 + v('crit_damage') / 100;
+    // Cleave and Multistrike: every 100% is one extra hit.
+    dps += v('dps') * (1 + frac('crit_chance') * critBonus) * (1 + v('cleave') / 100) * (1 + v('multistrike') / 100) * e.count;
   }
   return { hp, dps };
 }

@@ -125,6 +125,19 @@ async function main() {
   });
   console.log(`trinkets: ${trinkets.length}`);
 
+  // Food (the Chef's meals): the list has no text, each page names the Primary Stat.
+  // The second stat is random and the Dudex gives no amounts.
+  $ = cheerio.load(await fetchPage('food'));
+  const food = [];
+  for (const f of parseItems($, '#page-content')) {
+    const $f = cheerio.load(await fetchPage(f.slug));
+    const label = $f('section.tooltip .label').filter((_, el) => $f(el).text().trim() === 'Primary Stat:');
+    const primary = label.first().next().text().trim();
+    sprites.add(f.sprite);
+    food.push({ id: f.slug, name: f.name, icon: f.sprite, primary });
+  }
+  console.log(`food: ${food.length}`);
+
   // Dudes (list, then each page)
   $ = cheerio.load(await fetchPage('dude'));
   const dudeList = parseItems($, '#page-content');
@@ -187,6 +200,7 @@ async function main() {
     dudes,
     relics: Object.values(relics),
     trinkets,
+    food,
   };
   await fs.writeFile(OUT, JSON.stringify(data));
   console.log(`wrote ${path.relative(ROOT, OUT)}`);
